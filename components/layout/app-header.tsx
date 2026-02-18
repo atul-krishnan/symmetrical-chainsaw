@@ -28,7 +28,7 @@ function getBreadcrumbs(pathname: string): string[] {
 }
 
 export function AppHeader({
-    sidebarCollapsed: _sidebarCollapsed,
+    sidebarCollapsed,
     onToggleSidebar,
 }: {
     sidebarCollapsed: boolean;
@@ -41,6 +41,7 @@ export function AppHeader({
 
     return (
         <header
+            data-sidebar-collapsed={sidebarCollapsed ? "true" : "false"}
             className={cn(
                 "sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-white/80 backdrop-blur-sm px-4 sm:px-6 transition-all",
                 "border-[var(--border)]",

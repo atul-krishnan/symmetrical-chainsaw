@@ -1,0 +1,63 @@
+<svg width="720" height="460" viewBox="0 0 720 460" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Pilot delivery journey</title>
+  <desc id="desc">A timeline showing upload, generation, publish, and export milestones for the training pilot.</desc>
+  <defs>
+    <linearGradient id="journeyBg" x1="22" y1="32" x2="682" y2="428" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#133574" />
+      <stop offset="1" stop-color="#2459B3" />
+    </linearGradient>
+    <linearGradient id="line" x1="84" y1="235" x2="636" y2="235" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#98C1FF" />
+      <stop offset="1" stop-color="#E4F1FF" />
+    </linearGradient>
+  </defs>
+
+  <rect x="8" y="8" width="704" height="444" rx="28" fill="url(#journeyBg)" />
+  <rect x="28" y="28" width="664" height="404" rx="22" fill="white" fill-opacity="0.08" stroke="white" stroke-opacity="0.22" />
+
+  <text x="58" y="78" fill="#DCEBFF" font-size="20" font-family="'Inter', sans-serif" font-weight="700">Pilot timeline</text>
+  <text x="58" y="106" fill="#AFC9F7" font-size="13" font-family="'Inter', sans-serif" font-weight="500">Upload policy once, then move through generation and evidence export.</text>
+
+  <line x1="84" y1="235" x2="636" y2="235" stroke="url(#line)" stroke-width="6" stroke-linecap="round" />
+
+  <g>
+    <circle cx="112" cy="235" r="26" fill="#CFE2FF" />
+    <circle cx="112" cy="235" r="12" fill="#1F5EFF" />
+    <text x="78" y="286" fill="#EBF4FF" font-size="14" font-family="'Inter', sans-serif" font-weight="600">Upload</text>
+    <text x="58" y="306" fill="#AFC9F7" font-size="12" font-family="'Inter', sans-serif" font-weight="500">PDF, DOCX, TXT</text>
+  </g>
+
+  <g>
+    <circle cx="292" cy="235" r="26" fill="#CFE2FF" />
+    <circle cx="292" cy="235" r="12" fill="#1F5EFF" />
+    <text x="250" y="286" fill="#EBF4FF" font-size="14" font-family="'Inter', sans-serif" font-weight="600">Generate</text>
+    <text x="224" y="306" fill="#AFC9F7" font-size="12" font-family="'Inter', sans-serif" font-weight="500">Role modules + quiz gates</text>
+  </g>
+
+  <g>
+    <circle cx="472" cy="235" r="26" fill="#CFE2FF" />
+    <circle cx="472" cy="235" r="12" fill="#1F5EFF" />
+    <text x="436" y="286" fill="#EBF4FF" font-size="14" font-family="'Inter', sans-serif" font-weight="600">Publish</text>
+    <text x="411" y="306" fill="#AFC9F7" font-size="12" font-family="'Inter', sans-serif" font-weight="500">Assignments + reminders</text>
+  </g>
+
+  <g>
+    <circle cx="612" cy="235" r="26" fill="#CFE2FF" />
+    <circle cx="612" cy="235" r="12" fill="#1F5EFF" />
+    <text x="582" y="286" fill="#EBF4FF" font-size="14" font-family="'Inter', sans-serif" font-weight="600">Export</text>
+    <text x="548" y="306" fill="#AFC9F7" font-size="12" font-family="'Inter', sans-serif" font-weight="500">CSV + signed PDF</text>
+  </g>
+
+  <rect x="84" y="144" width="168" height="56" rx="14" fill="#FFFFFF" fill-opacity="0.12" stroke="#A8C5F7" />
+  <text x="100" y="177" fill="#E6F0FF" font-size="13" font-family="'Inter', sans-serif" font-weight="600">Source confidence: 97%</text>
+
+  <rect x="284" y="124" width="188" height="72" rx="14" fill="#FFFFFF" fill-opacity="0.12" stroke="#A8C5F7" />
+  <text x="304" y="154" fill="#E6F0FF" font-size="13" font-family="'Inter', sans-serif" font-weight="600">Review queue</text>
+  <text x="304" y="173" fill="#B9D2FB" font-size="12" font-family="'Inter', sans-serif" font-weight="500">Legal + Security sign-off</text>
+
+  <rect x="510" y="136" width="140" height="60" rx="14" fill="#FFFFFF" fill-opacity="0.12" stroke="#A8C5F7" />
+  <text x="530" y="168" fill="#E6F0FF" font-size="13" font-family="'Inter', sans-serif" font-weight="600">SLA: 28 sec export</text>
+
+  <rect x="170" y="344" width="380" height="48" rx="12" fill="#FFFFFF" fill-opacity="0.09" stroke="#A8C5F7" />
+  <text x="190" y="373" fill="#D8E8FF" font-size="13" font-family="'Inter', sans-serif" font-weight="600">Average pilot outcome: completion climbs from 63% to 91% in six weeks.</text>
+</svg>

@@ -70,7 +70,8 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-manrope);
+  --font-display: var(--font-syne);
 }
 
 /* ======================================================================
@@ -331,6 +332,37 @@ a:focus-visible {
   color: var(--text-faint);
   text-transform: uppercase;
   letter-spacing: 0.06em;
+}
+
+/* ======================================================================
+   Marketing Surface Utilities
+   ====================================================================== */
+
+.editorial-gradient {
+  background:
+    radial-gradient(circle at 15% 20%, #c8dbff6e 0%, transparent 40%),
+    radial-gradient(circle at 85% 12%, #8ad7ff38 0%, transparent 46%),
+    linear-gradient(145deg, #f5f9ff 0%, #e9f2ff 45%, #f9fcff 100%);
+}
+
+.ink-panel {
+  background: linear-gradient(160deg, #0f2f6a 0%, #18408b 56%, #1f5ab3 100%);
+  border: 1px solid #1d4ca3;
+  color: #d9e7ff;
+}
+
+.image-frame {
+  border-radius: 24px;
+  border: 1px solid #c9d9f1;
+  background: linear-gradient(180deg, #ffffffc7 0%, #f6fafff0 100%);
+  box-shadow: 0 18px 42px rgba(16, 47, 104, 0.14);
+}
+
+.metric-tile {
+  border-radius: 16px;
+  border: 1px solid #cddbef;
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+  padding: 16px;
 }
 
 /* ======================================================================

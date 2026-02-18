@@ -1,0 +1,69 @@
+<svg width="980" height="720" viewBox="0 0 980 720" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Policy command center</title>
+  <desc id="desc">Illustration of policy ingestion, campaign generation, and audit evidence outputs in one workspace.</desc>
+  <defs>
+    <linearGradient id="bg" x1="24" y1="22" x2="950" y2="696" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ECF4FF"/>
+      <stop offset="1" stop-color="#DCEAFF"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="108" y1="120" x2="876" y2="654" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#F5F9FF"/>
+    </linearGradient>
+    <linearGradient id="line" x1="228" y1="356" x2="736" y2="356" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1F5EFF"/>
+      <stop offset="1" stop-color="#61BCFF"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="12" y="12" width="956" height="696" rx="36" fill="url(#bg)"/>
+  <rect x="66" y="74" width="848" height="580" rx="28" fill="url(#panel)" stroke="#C8DAF3" stroke-width="2"/>
+  <rect x="66" y="74" width="848" height="66" rx="28" fill="#EAF2FF"/>
+  <circle cx="108" cy="108" r="8" fill="#83AFFF"/>
+  <circle cx="136" cy="108" r="8" fill="#A2C2FF"/>
+  <circle cx="164" cy="108" r="8" fill="#C4D7FB"/>
+
+  <text x="98" y="190" fill="#234B8F" font-size="24" font-family="'Inter',sans-serif" font-weight="700">PolicyPilot Command Center</text>
+  <text x="98" y="220" fill="#58739F" font-size="14" font-family="'Inter',sans-serif" font-weight="500">Source policy ingestion -> role campaign generation -> completion evidence</text>
+
+  <rect x="98" y="256" width="232" height="126" rx="18" fill="#F2F7FF" stroke="#C8DAF3"/>
+  <text x="122" y="290" fill="#1F4A90" font-size="16" font-family="'Inter',sans-serif" font-weight="700">Policy Intake</text>
+  <text x="122" y="314" fill="#55729E" font-size="13" font-family="'Inter',sans-serif" font-weight="500">PDF / DOCX / TXT</text>
+  <text x="122" y="334" fill="#55729E" font-size="13" font-family="'Inter',sans-serif" font-weight="500">MIME validation</text>
+  <text x="122" y="354" fill="#55729E" font-size="13" font-family="'Inter',sans-serif" font-weight="500">Obligation extraction</text>
+
+  <rect x="374" y="256" width="232" height="126" rx="18" fill="#F2F7FF" stroke="#C8DAF3"/>
+  <text x="398" y="290" fill="#1F4A90" font-size="16" font-family="'Inter',sans-serif" font-weight="700">Campaign Studio</text>
+  <text x="398" y="314" fill="#55729E" font-size="13" font-family="'Inter',sans-serif" font-weight="500">Exec / Builder / General tracks</text>
+  <text x="398" y="334" fill="#55729E" font-size="13" font-family="'Inter',sans-serif" font-weight="500">Quiz pass thresholds</text>
+  <text x="398" y="354" fill="#55729E" font-size="13" font-family="'Inter',sans-serif" font-weight="500">Publish + reminders</text>
+
+  <rect x="650" y="256" width="232" height="126" rx="18" fill="#0F2E67"/>
+  <text x="674" y="290" fill="#DDEAFF" font-size="16" font-family="'Inter',sans-serif" font-weight="700">Evidence Export</text>
+  <text x="674" y="314" fill="#A7C6F8" font-size="13" font-family="'Inter',sans-serif" font-weight="500">CSV audit rows</text>
+  <text x="674" y="334" fill="#A7C6F8" font-size="13" font-family="'Inter',sans-serif" font-weight="500">Signed PDF summary</text>
+  <text x="674" y="354" fill="#A7C6F8" font-size="13" font-family="'Inter',sans-serif" font-weight="500">Checksum headers</text>
+
+  <line x1="332" y1="320" x2="374" y2="320" stroke="url(#line)" stroke-width="6" stroke-linecap="round"/>
+  <line x1="608" y1="320" x2="650" y2="320" stroke="url(#line)" stroke-width="6" stroke-linecap="round"/>
+
+  <rect x="98" y="422" width="374" height="190" rx="20" fill="#FFFFFF" stroke="#C8DAF3"/>
+  <text x="122" y="456" fill="#1F4A90" font-size="17" font-family="'Inter',sans-serif" font-weight="700">Pilot KPI Pulse</text>
+  <text x="122" y="482" fill="#5A759F" font-size="13" font-family="'Inter',sans-serif" font-weight="500">Completion rate</text>
+  <rect x="122" y="496" width="292" height="14" rx="7" fill="#E5EEFF"/>
+  <rect x="122" y="496" width="251" height="14" rx="7" fill="url(#line)"/>
+  <text x="388" y="508" fill="#1D4FA9" font-size="11" font-family="'Inter',sans-serif" font-weight="700">86%</text>
+  <text x="122" y="536" fill="#5A759F" font-size="13" font-family="'Inter',sans-serif" font-weight="500">Attestation rate</text>
+  <rect x="122" y="550" width="292" height="14" rx="7" fill="#E5EEFF"/>
+  <rect x="122" y="550" width="267" height="14" rx="7" fill="#1F5EFF"/>
+  <text x="392" y="562" fill="#1D4FA9" font-size="11" font-family="'Inter',sans-serif" font-weight="700">91%</text>
+
+  <rect x="496" y="422" width="386" height="190" rx="20" fill="#FFFFFF" stroke="#C8DAF3"/>
+  <text x="520" y="456" fill="#1F4A90" font-size="17" font-family="'Inter',sans-serif" font-weight="700">Active Tasks</text>
+  <rect x="520" y="476" width="338" height="38" rx="12" fill="#EEF4FF"/>
+  <text x="538" y="500" fill="#31598F" font-size="13" font-family="'Inter',sans-serif" font-weight="600">Review Builder track module 2 copy</text>
+  <rect x="520" y="524" width="338" height="38" rx="12" fill="#EEF4FF"/>
+  <text x="538" y="548" fill="#31598F" font-size="13" font-family="'Inter',sans-serif" font-weight="600">Send overdue nudge batch for campaign Q1</text>
+  <rect x="520" y="572" width="338" height="26" rx="12" fill="#0F2E67"/>
+  <text x="690" y="589" text-anchor="middle" fill="#E4F0FF" font-size="12" font-family="'Inter',sans-serif" font-weight="700">Audit export SLA: 30 seconds</text>
+</svg>

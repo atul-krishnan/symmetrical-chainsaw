@@ -1,0 +1,37 @@
+<svg width="820" height="540" viewBox="0 0 820 540" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Pilot playbook</title>
+  <desc id="desc">A weekly enterprise pilot plan from policy setup through completion and evidence export.</desc>
+  <defs>
+    <linearGradient id="ppBg" x1="16" y1="16" x2="804" y2="524" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#153979"/>
+      <stop offset="1" stop-color="#1D5DB7"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="8" y="8" width="804" height="524" rx="28" fill="url(#ppBg)"/>
+  <rect x="28" y="28" width="764" height="484" rx="22" fill="white" fill-opacity="0.09" stroke="white" stroke-opacity="0.24"/>
+
+  <text x="52" y="74" fill="#E3EEFF" font-size="22" font-family="'Inter',sans-serif" font-weight="700">6-week pilot playbook</text>
+  <text x="52" y="102" fill="#AFC8F4" font-size="13" font-family="'Inter',sans-serif" font-weight="500">Structured operations for legal, security, and L&amp;D stakeholders.</text>
+
+  <rect x="52" y="132" width="716" height="88" rx="16" fill="#FFFFFF" fill-opacity="0.12" stroke="#97B7EB"/>
+  <text x="74" y="164" fill="#EAF3FF" font-size="14" font-family="'Inter',sans-serif" font-weight="700">Week 1</text>
+  <text x="74" y="188" fill="#C7DBFA" font-size="13" font-family="'Inter',sans-serif" font-weight="500">Upload policies, map obligations, define role tracks, approve draft campaign language.</text>
+  <rect x="634" y="158" width="114" height="34" rx="17" fill="#1F5EFF"/>
+  <text x="691" y="180" text-anchor="middle" fill="#E9F3FF" font-size="12" font-family="'Inter',sans-serif" font-weight="700">Setup gate</text>
+
+  <rect x="52" y="236" width="716" height="88" rx="16" fill="#FFFFFF" fill-opacity="0.12" stroke="#97B7EB"/>
+  <text x="74" y="268" fill="#EAF3FF" font-size="14" font-family="'Inter',sans-serif" font-weight="700">Week 2 to 4</text>
+  <text x="74" y="292" fill="#C7DBFA" font-size="13" font-family="'Inter',sans-serif" font-weight="500">Publish campaign, assign learners, execute reminder cadence, monitor completion by role track.</text>
+  <rect x="624" y="262" width="124" height="34" rx="17" fill="#1F5EFF"/>
+  <text x="686" y="284" text-anchor="middle" fill="#E9F3FF" font-size="12" font-family="'Inter',sans-serif" font-weight="700">Execution gate</text>
+
+  <rect x="52" y="340" width="716" height="88" rx="16" fill="#FFFFFF" fill-opacity="0.12" stroke="#97B7EB"/>
+  <text x="74" y="372" fill="#EAF3FF" font-size="14" font-family="'Inter',sans-serif" font-weight="700">Week 5 to 6</text>
+  <text x="74" y="396" fill="#C7DBFA" font-size="13" font-family="'Inter',sans-serif" font-weight="500">Finalize attestation coverage, generate evidence packs, and complete audit-readiness review.</text>
+  <rect x="624" y="366" width="124" height="34" rx="17" fill="#1F5EFF"/>
+  <text x="686" y="388" text-anchor="middle" fill="#E9F3FF" font-size="12" font-family="'Inter',sans-serif" font-weight="700">Evidence gate</text>
+
+  <rect x="52" y="446" width="716" height="50" rx="14" fill="#0F2F69"/>
+  <text x="74" y="476" fill="#DDEAFF" font-size="13" font-family="'Inter',sans-serif" font-weight="700">Primary KPI outcome: completion rate + attestation rate with exportable proof.</text>
+</svg>

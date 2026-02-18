@@ -1,13 +1,19 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Manrope, Syne } from "next/font/google";
 
 import { AnalyticsProvider } from "@/components/analytics/analytics-provider";
 import { runtimeEnv } from "@/lib/env";
 
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+const manrope = Manrope({
+  variable: "--font-manrope",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const syne = Syne({
+  variable: "--font-syne",
   subsets: ["latin"],
   display: "swap",
 });
@@ -38,8 +44,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.variable} font-sans antialiased`}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${manrope.variable} ${syne.variable} font-sans antialiased`}>
         <AnalyticsProvider>{children}</AnalyticsProvider>
       </body>
     </html>

@@ -1,0 +1,51 @@
+<svg width="900" height="620" viewBox="0 0 900 620" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Security blueprint</title>
+  <desc id="desc">Diagram of auth, tenancy, validation, logging, and evidence controls in PolicyPilot.</desc>
+  <defs>
+    <linearGradient id="sbBg" x1="20" y1="18" x2="878" y2="598" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#EFF6FF"/>
+      <stop offset="1" stop-color="#DCEBFF"/>
+    </linearGradient>
+  </defs>
+  <rect x="10" y="10" width="880" height="600" rx="34" fill="url(#sbBg)"/>
+  <rect x="56" y="54" width="788" height="512" rx="24" fill="#FFFFFF" stroke="#C8DBF5" stroke-width="2"/>
+
+  <text x="84" y="98" fill="#1F4A90" font-size="24" font-family="'Inter',sans-serif" font-weight="700">Security control blueprint</text>
+  <text x="84" y="126" fill="#5B769F" font-size="14" font-family="'Inter',sans-serif" font-weight="500">Defense-in-depth for enterprise pilots: auth, data isolation, validation, and auditable evidence.</text>
+
+  <rect x="84" y="164" width="224" height="106" rx="16" fill="#F2F7FF" stroke="#C8DBF5"/>
+  <text x="104" y="194" fill="#204E92" font-size="15" font-family="'Inter',sans-serif" font-weight="700">Auth boundary</text>
+  <text x="104" y="216" fill="#55739E" font-size="13" font-family="'Inter',sans-serif" font-weight="500">Magic link + Google OAuth</text>
+  <text x="104" y="236" fill="#55739E" font-size="13" font-family="'Inter',sans-serif" font-weight="500">Role-based access checks</text>
+  <text x="104" y="256" fill="#55739E" font-size="13" font-family="'Inter',sans-serif" font-weight="500">Least privilege endpoints</text>
+
+  <rect x="338" y="164" width="224" height="106" rx="16" fill="#F2F7FF" stroke="#C8DBF5"/>
+  <text x="358" y="194" fill="#204E92" font-size="15" font-family="'Inter',sans-serif" font-weight="700">Tenant isolation</text>
+  <text x="358" y="216" fill="#55739E" font-size="13" font-family="'Inter',sans-serif" font-weight="500">Org-scoped Postgres rows</text>
+  <text x="358" y="236" fill="#55739E" font-size="13" font-family="'Inter',sans-serif" font-weight="500">RLS on all core tables</text>
+  <text x="358" y="256" fill="#55739E" font-size="13" font-family="'Inter',sans-serif" font-weight="500">Secure storage paths</text>
+
+  <rect x="592" y="164" width="224" height="106" rx="16" fill="#F2F7FF" stroke="#C8DBF5"/>
+  <text x="612" y="194" fill="#204E92" font-size="15" font-family="'Inter',sans-serif" font-weight="700">Input hardening</text>
+  <text x="612" y="216" fill="#55739E" font-size="13" font-family="'Inter',sans-serif" font-weight="500">Zod contract validation</text>
+  <text x="612" y="236" fill="#55739E" font-size="13" font-family="'Inter',sans-serif" font-weight="500">MIME + extension checks</text>
+  <text x="612" y="256" fill="#55739E" font-size="13" font-family="'Inter',sans-serif" font-weight="500">Rate-limited critical routes</text>
+
+  <rect x="84" y="300" width="352" height="120" rx="16" fill="#FFFFFF" stroke="#C8DBF5"/>
+  <text x="108" y="334" fill="#204E92" font-size="16" font-family="'Inter',sans-serif" font-weight="700">Observability + traceability</text>
+  <text x="108" y="358" fill="#55739E" font-size="13" font-family="'Inter',sans-serif" font-weight="500">Structured logs: request_id, org_id, user_id, route, status_code, latency_ms.</text>
+  <text x="108" y="380" fill="#55739E" font-size="13" font-family="'Inter',sans-serif" font-weight="500">Request audit logs preserve action metadata and idempotency hash context.</text>
+  <rect x="108" y="394" width="170" height="10" rx="5" fill="#E2ECFF"/>
+  <rect x="108" y="394" width="136" height="10" rx="5" fill="#1F5EFF"/>
+
+  <rect x="462" y="300" width="354" height="188" rx="16" fill="#0F2F69"/>
+  <text x="486" y="334" fill="#DDEAFF" font-size="16" font-family="'Inter',sans-serif" font-weight="700">Evidence integrity layer</text>
+  <text x="486" y="358" fill="#A9C8F6" font-size="13" font-family="'Inter',sans-serif" font-weight="500">CSV + signed PDF exports include checksum headers and audit row persistence.</text>
+  <rect x="486" y="376" width="306" height="42" rx="12" fill="#FFFFFF" fill-opacity="0.1" stroke="#8DB3F2"/>
+  <text x="504" y="402" fill="#EAF3FF" font-size="13" font-family="'Inter',sans-serif" font-weight="600">ATTESTATION_SIGNING_SECRET backed HMAC summary</text>
+  <rect x="486" y="430" width="306" height="42" rx="12" fill="#FFFFFF" fill-opacity="0.1" stroke="#8DB3F2"/>
+  <text x="504" y="456" fill="#EAF3FF" font-size="13" font-family="'Inter',sans-serif" font-weight="600">Replay-safe publish + nudge endpoints (Idempotency-Key)</text>
+
+  <rect x="84" y="438" width="352" height="50" rx="14" fill="#EEF4FF" stroke="#C8DBF5"/>
+  <text x="108" y="470" fill="#2D558F" font-size="13" font-family="'Inter',sans-serif" font-weight="700">Security stance: no customer data used for model training; hosted API only.</text>
+</svg>

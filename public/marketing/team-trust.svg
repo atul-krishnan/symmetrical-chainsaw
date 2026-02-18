@@ -1,0 +1,62 @@
+<svg width="640" height="420" viewBox="0 0 640 420" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Customer feedback illustration</title>
+  <desc id="desc">Three stakeholder avatars with chat bubbles and positive signals about compliance training results.</desc>
+  <defs>
+    <linearGradient id="trustBg" x1="20" y1="24" x2="620" y2="396" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ECF3FF" />
+      <stop offset="1" stop-color="#DDEBFF" />
+    </linearGradient>
+  </defs>
+
+  <rect x="10" y="10" width="620" height="400" rx="28" fill="url(#trustBg)" />
+  <rect x="28" y="28" width="584" height="364" rx="22" fill="#FFFFFF" fill-opacity="0.62" stroke="#C4D7F5" />
+
+  <rect x="72" y="58" width="188" height="68" rx="14" fill="#FFFFFF" stroke="#CADBF5" />
+  <text x="94" y="86" fill="#2B4E86" font-size="13" font-family="'Inter', sans-serif" font-weight="700">\"Faster legal sign-off\"</text>
+  <text x="94" y="106" fill="#5773A1" font-size="12" font-family="'Inter', sans-serif" font-weight="500">Policy map was immediately clear.</text>
+
+  <rect x="378" y="52" width="190" height="72" rx="14" fill="#FFFFFF" stroke="#CADBF5" />
+  <text x="400" y="81" fill="#2B4E86" font-size="13" font-family="'Inter', sans-serif" font-weight="700">\"Evidence in one click\"</text>
+  <text x="400" y="101" fill="#5773A1" font-size="12" font-family="'Inter', sans-serif" font-weight="500">No spreadsheet stitching required.</text>
+
+  <rect x="214" y="302" width="216" height="74" rx="14" fill="#FFFFFF" stroke="#CADBF5" />
+  <text x="236" y="332" fill="#2B4E86" font-size="13" font-family="'Inter', sans-serif" font-weight="700">\"Completion improved by 35%\"</text>
+  <text x="236" y="352" fill="#5773A1" font-size="12" font-family="'Inter', sans-serif" font-weight="500">Role tracks reduced learner drop-off.</text>
+
+  <line x1="168" y1="126" x2="256" y2="218" stroke="#9FBDF0" stroke-width="3" stroke-linecap="round" />
+  <line x1="472" y1="124" x2="386" y2="216" stroke="#9FBDF0" stroke-width="3" stroke-linecap="round" />
+  <line x1="322" y1="302" x2="322" y2="248" stroke="#9FBDF0" stroke-width="3" stroke-linecap="round" />
+
+  <g>
+    <circle cx="248" cy="220" r="46" fill="#1F5EFF" fill-opacity="0.12" stroke="#2E63DA" stroke-width="2" />
+    <circle cx="248" cy="206" r="18" fill="#1F5EFF" />
+    <rect x="218" y="232" width="60" height="28" rx="14" fill="#1F5EFF" />
+    <text x="238" y="210" text-anchor="middle" fill="#EEF4FF" font-size="10" font-family="'Inter', sans-serif" font-weight="700">Legal</text>
+  </g>
+
+  <g>
+    <circle cx="396" cy="220" r="46" fill="#1F5EFF" fill-opacity="0.12" stroke="#2E63DA" stroke-width="2" />
+    <circle cx="396" cy="206" r="18" fill="#1F5EFF" />
+    <rect x="366" y="232" width="60" height="28" rx="14" fill="#1F5EFF" />
+    <text x="396" y="210" text-anchor="middle" fill="#EEF4FF" font-size="10" font-family="'Inter', sans-serif" font-weight="700">L&amp;D</text>
+  </g>
+
+  <g>
+    <circle cx="322" cy="244" r="56" fill="#1F5EFF" fill-opacity="0.14" stroke="#2E63DA" stroke-width="2" />
+    <circle cx="322" cy="226" r="20" fill="#1F5EFF" />
+    <rect x="288" y="256" width="68" height="32" rx="16" fill="#1F5EFF" />
+    <text x="322" y="230" text-anchor="middle" fill="#EEF4FF" font-size="10" font-family="'Inter', sans-serif" font-weight="700">Security</text>
+  </g>
+
+  <g fill="#1F5EFF" fill-opacity="0.25">
+    <circle cx="104" cy="330" r="8" />
+    <circle cx="546" cy="314" r="8" />
+    <circle cx="84" cy="176" r="6" />
+    <circle cx="558" cy="190" r="6" />
+  </g>
+
+  <g>
+    <path d="M102 202L106 212L117 213L109 220L111 231L102 225L93 231L95 220L87 213L98 212L102 202Z" fill="#4A8BFF" />
+    <path d="M542 220L546 230L557 231L549 238L551 249L542 243L533 249L535 238L527 231L538 230L542 220Z" fill="#4A8BFF" />
+  </g>
+</svg>

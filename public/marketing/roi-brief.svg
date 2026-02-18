@@ -1,0 +1,51 @@
+<svg width="860" height="560" viewBox="0 0 860 560" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">ROI brief</title>
+  <desc id="desc">Business value snapshot showing efficiency gains and risk reduction from PolicyPilot deployment.</desc>
+  <defs>
+    <linearGradient id="rbBg" x1="16" y1="16" x2="844" y2="544" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F2F69"/>
+      <stop offset="1" stop-color="#1F5AB3"/>
+    </linearGradient>
+    <linearGradient id="rbLine" x1="132" y1="364" x2="742" y2="364" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#72B8FF"/>
+      <stop offset="1" stop-color="#E4F1FF"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="844" height="544" rx="30" fill="url(#rbBg)"/>
+  <rect x="32" y="32" width="796" height="496" rx="24" fill="#FFFFFF" fill-opacity="0.08" stroke="white" stroke-opacity="0.24"/>
+
+  <text x="60" y="82" fill="#E6F0FF" font-size="24" font-family="'Inter',sans-serif" font-weight="700">Annual value brief</text>
+  <text x="60" y="112" fill="#B7D0F6" font-size="14" font-family="'Inter',sans-serif" font-weight="500">Measure productivity gains and compliance-risk reduction in one model.</text>
+
+  <rect x="60" y="148" width="236" height="114" rx="16" fill="#FFFFFF" fill-opacity="0.13" stroke="#93B5E8"/>
+  <text x="84" y="182" fill="#EAF3FF" font-size="13" font-family="'Inter',sans-serif" font-weight="700">Employees in scope</text>
+  <text x="84" y="224" fill="#EAF3FF" font-size="38" font-family="'Inter',sans-serif" font-weight="700">500</text>
+  <text x="84" y="246" fill="#B5CDF3" font-size="12" font-family="'Inter',sans-serif" font-weight="500">pilot-ready population</text>
+
+  <rect x="312" y="148" width="236" height="114" rx="16" fill="#FFFFFF" fill-opacity="0.13" stroke="#93B5E8"/>
+  <text x="336" y="182" fill="#EAF3FF" font-size="13" font-family="'Inter',sans-serif" font-weight="700">Hours saved / learner / year</text>
+  <text x="336" y="224" fill="#EAF3FF" font-size="38" font-family="'Inter',sans-serif" font-weight="700">2.5</text>
+  <text x="336" y="246" fill="#B5CDF3" font-size="12" font-family="'Inter',sans-serif" font-weight="500">authoring + coordination time</text>
+
+  <rect x="564" y="148" width="236" height="114" rx="16" fill="#FFFFFF" fill-opacity="0.13" stroke="#93B5E8"/>
+  <text x="588" y="182" fill="#EAF3FF" font-size="13" font-family="'Inter',sans-serif" font-weight="700">Incident reduction / year</text>
+  <text x="588" y="224" fill="#EAF3FF" font-size="38" font-family="'Inter',sans-serif" font-weight="700">3</text>
+  <text x="588" y="246" fill="#B5CDF3" font-size="12" font-family="'Inter',sans-serif" font-weight="500">training-related exposures prevented</text>
+
+  <rect x="60" y="288" width="740" height="114" rx="18" fill="#0D2B60"/>
+  <text x="86" y="324" fill="#DDEAFF" font-size="14" font-family="'Inter',sans-serif" font-weight="700">Estimated annual value</text>
+  <text x="86" y="370" fill="#ECF4FF" font-size="52" font-family="'Inter',sans-serif" font-weight="700">$139,000</text>
+  <line x1="86" y1="384" x2="776" y2="384" stroke="url(#rbLine)" stroke-width="6" stroke-linecap="round"/>
+
+  <rect x="60" y="424" width="236" height="76" rx="14" fill="#FFFFFF" fill-opacity="0.12" stroke="#93B5E8"/>
+  <text x="84" y="455" fill="#EAF3FF" font-size="13" font-family="'Inter',sans-serif" font-weight="700">Efficiency gain</text>
+  <text x="84" y="482" fill="#D4E4FF" font-size="18" font-family="'Inter',sans-serif" font-weight="700">$85k</text>
+
+  <rect x="312" y="424" width="236" height="76" rx="14" fill="#FFFFFF" fill-opacity="0.12" stroke="#93B5E8"/>
+  <text x="336" y="455" fill="#EAF3FF" font-size="13" font-family="'Inter',sans-serif" font-weight="700">Risk avoidance</text>
+  <text x="336" y="482" fill="#D4E4FF" font-size="18" font-family="'Inter',sans-serif" font-weight="700">$54k</text>
+
+  <rect x="564" y="424" width="236" height="76" rx="14" fill="#FFFFFF" fill-opacity="0.12" stroke="#93B5E8"/>
+  <text x="588" y="455" fill="#EAF3FF" font-size="13" font-family="'Inter',sans-serif" font-weight="700">Time to first campaign</text>
+  <text x="588" y="482" fill="#D4E4FF" font-size="18" font-family="'Inter',sans-serif" font-weight="700">less than 1 week</text>
+</svg>
