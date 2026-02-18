@@ -9,7 +9,12 @@
  * Requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env / .env.local
  */
 
-import "dotenv/config";
+import dotenv from "dotenv";
+import path from "node:path";
+
+// Load .env.local first (Next.js convention), fall back to .env
+dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
+dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 import { createClient } from "@supabase/supabase-js";
 import { randomUUID } from "node:crypto";
 
@@ -23,7 +28,7 @@ const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
   console.error(
     "❌  Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in environment.\n" +
-      "   Copy .env.example → .env.local and fill in your Supabase credentials.",
+    "   Copy .env.example → .env.local and fill in your Supabase credentials.",
   );
   process.exit(1);
 }
