@@ -1,13 +1,61 @@
 "use client";
 
 import Link from "next/link";
-import type { PropsWithChildren } from "react";
+import { usePathname } from "next/navigation";
+import { useState, type PropsWithChildren } from "react";
 
 import { ProductNav } from "@/components/layout/product-nav";
 import { OrgProvider, useOrgContext } from "@/lib/edtech/org-context";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 function ProductShellBody({ children }: PropsWithChildren) {
   const { loading, error, memberships, requiresSelection, refreshMemberships } = useOrgContext();
+  const [bootstrapLoading, setBootstrapLoading] = useState(false);
+  const [bootstrapError, setBootstrapError] = useState<string | null>(null);
+  const canBootstrapOwner = process.env.NODE_ENV !== "production";
+
+  const bootstrapOwner = async () => {
+    setBootstrapLoading(true);
+    setBootstrapError(null);
+
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) {
+      setBootstrapError("Supabase is not configured in this environment.");
+      setBootstrapLoading(false);
+      return;
+    }
+
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
+
+    if (!token) {
+      setBootstrapError("Sign in before bootstrapping workspace access.");
+      setBootstrapLoading(false);
+      return;
+    }
+
+    const response = await fetch("/api/me/bootstrap-owner", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
+
+    const body = (await response.json()) as { error?: { message?: string } };
+
+    if (!response.ok) {
+      setBootstrapError(
+        body.error?.message ?? "Bootstrap failed. Check API logs and retry.",
+      );
+      setBootstrapLoading(false);
+      return;
+    }
+
+    await refreshMemberships();
+    setBootstrapLoading(false);
+  };
 
   if (loading) {
     return (
@@ -62,6 +110,16 @@ function ProductShellBody({ children }: PropsWithChildren) {
             >
               Check again
             </button>
+            {canBootstrapOwner ? (
+              <button
+                className="h-10 rounded-xl border border-[#d2ddef] bg-white px-4 text-sm font-semibold text-[#10243e] hover:bg-[#f4f8ff] disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={bootstrapLoading}
+                onClick={() => void bootstrapOwner()}
+                type="button"
+              >
+                {bootstrapLoading ? "Creating workspace..." : "Bootstrap owner access"}
+              </button>
+            ) : null}
             <Link
               className="inline-flex h-10 items-center rounded-xl border border-[#d2ddef] px-4 text-sm font-semibold text-[#10243e] hover:bg-[#f4f8ff]"
               href="/product/auth"
@@ -69,6 +127,12 @@ function ProductShellBody({ children }: PropsWithChildren) {
               Switch account
             </Link>
           </div>
+          {canBootstrapOwner ? (
+            <p className="mt-3 text-xs text-[#6079a2]">
+              Dev helper: creates owner membership for your signed-in user when no org access exists.
+            </p>
+          ) : null}
+          {bootstrapError ? <p className="mt-2 text-sm text-[#a54f3a]">{bootstrapError}</p> : null}
         </section>
       </main>
     );
@@ -91,6 +155,22 @@ function ProductShellBody({ children }: PropsWithChildren) {
 }
 
 export function ProductShell({ children }: PropsWithChildren) {
+  const pathname = usePathname();
+  const isAuthRoute = pathname.startsWith("/product/auth");
+
+  if (isAuthRoute) {
+    return (
+      <div className="relative min-h-screen overflow-hidden bg-[#f4f7fd]">
+        <div className="pointer-events-none absolute inset-0 -z-10 app-grid" />
+        <div className="pointer-events-none absolute inset-0 -z-10">
+          <div className="absolute left-[-14rem] top-[-8rem] h-[34rem] w-[34rem] rounded-full bg-[#2f6dff1a] blur-3xl" />
+          <div className="absolute right-[-12rem] top-28 h-[30rem] w-[30rem] rounded-full bg-[#17a6ff1a] blur-3xl" />
+        </div>
+        <main className="px-4 py-8 sm:px-6 lg:px-8">{children}</main>
+      </div>
+    );
+  }
+
   return (
     <OrgProvider>
       <div className="relative min-h-screen overflow-hidden bg-[#f4f7fd]">

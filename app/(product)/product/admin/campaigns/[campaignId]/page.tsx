@@ -3,8 +3,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 
+import { AdminAccessGate } from "@/components/product/admin-access-gate";
 import { SessionStatus } from "@/components/product/session-status";
 import { useOrgContext } from "@/lib/edtech/org-context";
+import { hasMinimumRole } from "@/lib/edtech/roles";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 // ---------------------------------------------------------------------------
@@ -57,15 +59,15 @@ const ROLE_TRACK_LABELS: Record<string, string> = {
 };
 
 const ROLE_TRACK_COLORS: Record<string, string> = {
-  exec: "#d9902f",
-  builder: "#0e8c89",
-  general: "#7c5cbf",
+  exec: "#1f5eff",
+  builder: "#18a7ff",
+  general: "#7a9cff",
 };
 
 const STATUS_BADGE: Record<string, { bg: string; text: string }> = {
-  draft: { bg: "#f0e6d2", text: "#9a7b4f" },
-  published: { bg: "#d4f0e0", text: "#1a7a4c" },
-  archived: { bg: "#e8e0d6", text: "#6b5e50" },
+  draft: { bg: "#eef4ff", text: "#305c9d" },
+  published: { bg: "#e8f9f2", text: "#1e7e5e" },
+  archived: { bg: "#eff3f8", text: "#526b8f" },
 };
 
 // ---------------------------------------------------------------------------
@@ -102,6 +104,7 @@ function simpleMarkdownToHtml(md: string): string {
 export default function CampaignEditorPage() {
   const { campaignId } = useParams<{ campaignId: string }>();
   const { selectedOrgId, selectedMembership } = useOrgContext();
+  const canEdit = hasMinimumRole(selectedMembership?.role, "admin");
 
   const [detail, setDetail] = useState<CampaignDetail | null>(null);
   const [activeTab, setActiveTab] = useState(0);
@@ -341,27 +344,38 @@ export default function CampaignEditorPage() {
   const isDraft = campaign?.status === "draft";
   const badge = STATUS_BADGE[campaign?.status ?? "draft"] ?? STATUS_BADGE.draft;
 
+  if (!canEdit) {
+    return (
+      <AdminAccessGate
+        currentRole={selectedMembership?.role}
+        orgName={selectedMembership?.orgName}
+        requiredRole="admin"
+        title="Campaign editor"
+      />
+    );
+  }
+
   return (
     <section className="mx-auto max-w-6xl space-y-6 py-6 px-4 sm:px-6">
       <SessionStatus />
 
       {!detail && (
-        <div className="rounded-[1.8rem] border border-[#cfc2b5] bg-[#fff8ef] p-6 space-y-4">
-          <h1 className="font-display text-4xl text-[#10243e]">Campaign Editor</h1>
-          <p className="text-sm text-[#4f6379]">
+        <div className="rounded-[1.8rem] surface-card p-6 space-y-4">
+          <h1 className="font-display text-4xl text-[#10244a]">Campaign Editor</h1>
+          <p className="text-sm text-[#4f6486]">
             Campaign ID:{" "}
-            <code className="text-xs bg-[#f0e6d2] px-1.5 py-0.5 rounded-md">
+            <code className="text-xs bg-[#eef4ff] px-1.5 py-0.5 rounded-md">
               {campaignId}
             </code>
           </p>
-          <p className="text-sm text-[#4f6379]">
+          <p className="text-sm text-[#4f6486]">
             Workspace:{" "}
-            <span className="font-semibold text-[#10243e]">
+            <span className="font-semibold text-[#10244a]">
               {selectedMembership?.orgName ?? "Select an organization in the top nav"}
             </span>
           </p>
           {selectedOrgId ? (
-            <p className="text-sm text-[#4f6379]">
+            <p className="text-sm text-[#4f6486]">
               {loading
                 ? "Loading campaign content..."
                 : "Campaign content not loaded yet. Next action: retry."}
@@ -373,7 +387,7 @@ export default function CampaignEditorPage() {
           )}
           {selectedOrgId && !loading ? (
             <button
-              className="h-11 rounded-xl bg-[#0e8c89] px-6 text-sm font-semibold text-white hover:bg-[#0c7573]"
+              className="h-11 rounded-xl bg-[#1f5eff] px-6 text-sm font-semibold text-white hover:bg-[#154ee6]"
               onClick={() => void loadCampaign()}
               type="button"
             >
@@ -384,12 +398,12 @@ export default function CampaignEditorPage() {
       )}
 
       {error && (
-        <p className="text-sm text-[#a04e39] bg-[#fdf0ec] rounded-xl px-4 py-3 border border-[#e8c5ba]">
+        <p className="text-sm text-[#a04e39] bg-[#fff1ed] rounded-xl px-4 py-3 border border-[#f1cbc2]">
           {error}
         </p>
       )}
       {success && (
-        <p className="text-sm text-[#0b746e] bg-[#e6f5f0] rounded-xl px-4 py-3 border border-[#b5ddd3]">
+        <p className="text-sm text-[#12795c] bg-[#e8f9f2] rounded-xl px-4 py-3 border border-[#bde8d3]">
           {success}
         </p>
       )}
@@ -398,11 +412,11 @@ export default function CampaignEditorPage() {
       {detail && campaign && (
         <>
           {/* Campaign header */}
-          <div className="rounded-[1.8rem] border border-[#cfc2b5] bg-[#fff8ef] p-6">
+          <div className="rounded-[1.8rem] surface-card p-6">
             <div className="flex flex-wrap items-start gap-4 justify-between">
               <div className="flex-1 min-w-[16rem] space-y-3">
                 <div className="flex items-center gap-3">
-                  <h1 className="font-display text-3xl text-[#10243e]">
+                  <h1 className="font-display text-3xl text-[#10244a]">
                     Campaign Editor
                   </h1>
                   <span
@@ -415,7 +429,7 @@ export default function CampaignEditorPage() {
 
                 {isDraft ? (
                   <input
-                    className="h-10 w-full rounded-xl border border-[#c9bcac] bg-white px-3 font-display text-lg text-[#10243e]"
+                    className="h-10 w-full rounded-xl border border-[#d3deef] bg-white px-3 font-display text-lg text-[#10244a]"
                     value={campaign.name}
                     onChange={(e) =>
                       setDetail((prev) =>
@@ -426,18 +440,18 @@ export default function CampaignEditorPage() {
                     }
                   />
                 ) : (
-                  <p className="font-display text-lg text-[#10243e]">
+                  <p className="font-display text-lg text-[#10244a]">
                     {campaign.name}
                   </p>
                 )}
 
-                <div className="flex flex-wrap gap-4 text-xs text-[#4f6379]">
+                <div className="flex flex-wrap gap-4 text-xs text-[#4f6486]">
                   <span>
                     Due:{" "}
                     {isDraft ? (
                       <input
                         type="date"
-                        className="ml-1 rounded-lg border border-[#c9bcac] bg-white px-2 py-0.5 text-xs"
+                        className="ml-1 rounded-lg border border-[#d3deef] bg-white px-2 py-0.5 text-xs"
                         value={campaign.dueAt ? campaign.dueAt.slice(0, 10) : ""}
                         onChange={(e) =>
                           setDetail((prev) =>
@@ -485,7 +499,7 @@ export default function CampaignEditorPage() {
               {isDraft && (
                 <div className="flex gap-2 pt-1">
                   <button
-                    className="h-10 rounded-xl border border-[#c9bcac] bg-white px-5 text-sm font-semibold text-[#10243e] hover:bg-[#f4ecdf] disabled:opacity-50"
+                    className="h-10 rounded-xl border border-[#d3deef] bg-white px-5 text-sm font-semibold text-[#10244a] hover:bg-[#f4f8ff] disabled:opacity-50"
                     disabled={saving}
                     onClick={saveDraft}
                     type="button"
@@ -493,7 +507,7 @@ export default function CampaignEditorPage() {
                     {saving ? "Saving…" : "Save Draft"}
                   </button>
                   <button
-                    className="h-10 rounded-xl bg-[#0e8c89] px-5 text-sm font-semibold text-white hover:bg-[#0c7573] disabled:opacity-50"
+                    className="h-10 rounded-xl bg-[#1f5eff] px-5 text-sm font-semibold text-white hover:bg-[#154ee6] disabled:opacity-50"
                     disabled={saving}
                     onClick={publishCampaign}
                     type="button"
@@ -516,11 +530,11 @@ export default function CampaignEditorPage() {
                   className="flex items-center gap-2 whitespace-nowrap rounded-t-xl px-4 py-2.5 text-sm font-semibold transition-all"
                   onClick={() => setActiveTab(i)}
                   style={{
-                    background: isActive ? "#fff8ef" : "#f0e6d2",
-                    color: isActive ? "#10243e" : "#6b5c4a",
+                    background: isActive ? "#ffffff" : "#eef4ff",
+                    color: isActive ? "#10244a" : "#5b7194",
                     borderBottom: isActive
                       ? "2px solid transparent"
-                      : "2px solid #cfc2b5",
+                      : "2px solid #d3deef",
                     borderLeft: isActive
                       ? `3px solid ${trackColor}`
                       : "3px solid transparent",
@@ -539,13 +553,13 @@ export default function CampaignEditorPage() {
 
           {/* Active module editor */}
           {currentModule && (
-            <div className="rounded-[1.8rem] border border-[#cfc2b5] bg-[#fff8ef] p-6 space-y-6">
+            <div className="rounded-[1.8rem] surface-card p-6 space-y-6">
               {/* Module metadata */}
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="space-y-1 text-sm">
-                  <span className="font-semibold text-[#10243e]">Module Title</span>
+                  <span className="font-semibold text-[#10244a]">Module Title</span>
                   <input
-                    className="h-10 w-full rounded-xl border border-[#c9bcac] bg-white px-3 disabled:opacity-60"
+                    className="h-10 w-full rounded-xl border border-[#d3deef] bg-white px-3 disabled:opacity-60"
                     disabled={!isDraft}
                     value={currentModule.title}
                     onChange={(e) =>
@@ -555,12 +569,12 @@ export default function CampaignEditorPage() {
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <label className="space-y-1 text-sm">
-                    <span className="font-semibold text-[#10243e]">
+                    <span className="font-semibold text-[#10244a]">
                       Pass Score
                     </span>
                     <div className="flex items-center gap-2">
                       <input
-                        className="h-10 flex-1 rounded-xl border border-[#c9bcac] bg-white px-3 disabled:opacity-60"
+                        className="h-10 flex-1 rounded-xl border border-[#d3deef] bg-white px-3 disabled:opacity-60"
                         disabled={!isDraft}
                         type="number"
                         min={60}
@@ -574,15 +588,15 @@ export default function CampaignEditorPage() {
                           )
                         }
                       />
-                      <span className="text-xs text-[#4f6379]">%</span>
+                      <span className="text-xs text-[#4f6486]">%</span>
                     </div>
                   </label>
                   <label className="space-y-1 text-sm">
-                    <span className="font-semibold text-[#10243e]">
+                    <span className="font-semibold text-[#10244a]">
                       Est. Minutes
                     </span>
                     <input
-                      className="h-10 w-full rounded-xl border border-[#c9bcac] bg-white px-3 disabled:opacity-60"
+                      className="h-10 w-full rounded-xl border border-[#d3deef] bg-white px-3 disabled:opacity-60"
                       disabled={!isDraft}
                       type="number"
                       min={3}
@@ -601,9 +615,9 @@ export default function CampaignEditorPage() {
               </div>
 
               <label className="block space-y-1 text-sm">
-                <span className="font-semibold text-[#10243e]">Summary</span>
+                <span className="font-semibold text-[#10244a]">Summary</span>
                 <textarea
-                  className="w-full rounded-xl border border-[#c9bcac] bg-white px-3 py-2 text-sm leading-relaxed disabled:opacity-60"
+                  className="w-full rounded-xl border border-[#d3deef] bg-white px-3 py-2 text-sm leading-relaxed disabled:opacity-60"
                   disabled={!isDraft}
                   rows={2}
                   value={currentModule.summary}
@@ -616,11 +630,11 @@ export default function CampaignEditorPage() {
               {/* Content markdown — edit / preview toggle */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-[#10243e]">
+                  <span className="text-sm font-semibold text-[#10244a]">
                     Content (Markdown)
                   </span>
                   <button
-                    className="text-xs font-medium text-[#0e8c89] hover:underline"
+                    className="text-xs font-medium text-[#1f5eff] hover:underline"
                     onClick={() =>
                       setPreviewModule(
                         previewModule === activeTab ? null : activeTab,
@@ -634,7 +648,7 @@ export default function CampaignEditorPage() {
 
                 {previewModule === activeTab ? (
                   <div
-                    className="prose prose-sm max-w-none rounded-xl border border-[#c9bcac] bg-white p-4"
+                    className="prose prose-sm max-w-none rounded-xl border border-[#d3deef] bg-white p-4"
                     dangerouslySetInnerHTML={{
                       __html: simpleMarkdownToHtml(
                         currentModule.contentMarkdown,
@@ -643,7 +657,7 @@ export default function CampaignEditorPage() {
                   />
                 ) : (
                   <textarea
-                    className="w-full rounded-xl border border-[#c9bcac] bg-white px-3 py-2 font-mono text-[13px] leading-relaxed disabled:opacity-60"
+                    className="w-full rounded-xl border border-[#d3deef] bg-white px-3 py-2 font-mono text-[13px] leading-relaxed disabled:opacity-60"
                     disabled={!isDraft}
                     rows={12}
                     value={currentModule.contentMarkdown}
@@ -661,12 +675,12 @@ export default function CampaignEditorPage() {
               {/* Quiz questions */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-display text-xl text-[#10243e]">
+                  <h3 className="font-display text-xl text-[#10244a]">
                     Quiz Questions ({currentModule.quizQuestions.length})
                   </h3>
                   {isDraft && currentModule.quizQuestions.length < 8 && (
                     <button
-                      className="rounded-lg border border-[#0e8c89] px-3 py-1.5 text-xs font-semibold text-[#0e8c89] hover:bg-[#e6f5f0]"
+                      className="rounded-lg border border-[#1f5eff] px-3 py-1.5 text-xs font-semibold text-[#1f5eff] hover:bg-[#e8f9f2]"
                       onClick={() => addQuestion(activeTab)}
                       type="button"
                     >
@@ -681,7 +695,7 @@ export default function CampaignEditorPage() {
                     key={q.id ?? `new-${qi}`}
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#0e8c89] text-xs font-bold text-white">
+                      <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-[#1f5eff] text-xs font-bold text-white">
                         {qi + 1}
                       </span>
                       {isDraft && currentModule.quizQuestions.length > 1 && (
@@ -696,9 +710,9 @@ export default function CampaignEditorPage() {
                     </div>
 
                     <label className="block space-y-1 text-sm">
-                      <span className="font-medium text-[#10243e]">Prompt</span>
+                      <span className="font-medium text-[#10244a]">Prompt</span>
                       <input
-                        className="h-10 w-full rounded-xl border border-[#c9bcac] bg-white px-3 disabled:opacity-60"
+                        className="h-10 w-full rounded-xl border border-[#d3deef] bg-white px-3 disabled:opacity-60"
                         disabled={!isDraft}
                         value={q.prompt}
                         onChange={(e) =>
@@ -731,15 +745,15 @@ export default function CampaignEditorPage() {
                                 ci,
                               )
                             }
-                            className="accent-[#0e8c89]"
+                            className="accent-[#1f5eff]"
                           />
                           <input
                             className="h-9 flex-1 rounded-lg border bg-white px-2 text-sm disabled:opacity-60"
                             style={{
                               borderColor:
                                 q.correctChoiceIndex === ci
-                                  ? "#0e8c89"
-                                  : "#c9bcac",
+                                  ? "#1f5eff"
+                                  : "#d3deef",
                             }}
                             disabled={!isDraft}
                             value={choice}
@@ -758,11 +772,11 @@ export default function CampaignEditorPage() {
                     </div>
 
                     <label className="block space-y-1 text-sm">
-                      <span className="font-medium text-[#10243e]">
+                      <span className="font-medium text-[#10244a]">
                         Explanation
                       </span>
                       <textarea
-                        className="w-full rounded-xl border border-[#c9bcac] bg-white px-3 py-2 text-sm leading-relaxed disabled:opacity-60"
+                        className="w-full rounded-xl border border-[#d3deef] bg-white px-3 py-2 text-sm leading-relaxed disabled:opacity-60"
                         disabled={!isDraft}
                         rows={2}
                         value={q.explanation}
@@ -784,9 +798,9 @@ export default function CampaignEditorPage() {
 
           {/* Bottom action bar */}
           {isDraft && (
-            <div className="sticky bottom-4 flex justify-end gap-2 rounded-xl border border-[#cfc2b5] bg-[#fff8efdd] p-3 backdrop-blur-md">
+            <div className="sticky bottom-4 flex justify-end gap-2 rounded-xl border border-[#d3deef] bg-white/90 p-3 backdrop-blur-md">
               <button
-                className="h-10 rounded-xl border border-[#c9bcac] bg-white px-5 text-sm font-semibold text-[#10243e] hover:bg-[#f4ecdf] disabled:opacity-50"
+                className="h-10 rounded-xl border border-[#d3deef] bg-white px-5 text-sm font-semibold text-[#10244a] hover:bg-[#f4f8ff] disabled:opacity-50"
                 disabled={saving}
                 onClick={saveDraft}
                 type="button"
@@ -794,7 +808,7 @@ export default function CampaignEditorPage() {
                 {saving ? "Saving…" : "Save Draft"}
               </button>
               <button
-                className="h-10 rounded-xl bg-[#0e8c89] px-5 text-sm font-semibold text-white hover:bg-[#0c7573] disabled:opacity-50"
+                className="h-10 rounded-xl bg-[#1f5eff] px-5 text-sm font-semibold text-white hover:bg-[#154ee6] disabled:opacity-50"
                 disabled={saving}
                 onClick={publishCampaign}
                 type="button"

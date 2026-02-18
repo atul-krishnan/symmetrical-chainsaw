@@ -1,9 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { BarChart3, RefreshCcw } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { AdminAccessGate } from "@/components/product/admin-access-gate";
 import { SessionStatus } from "@/components/product/session-status";
 import { useOrgContext } from "@/lib/edtech/org-context";
+import { hasMinimumRole } from "@/lib/edtech/roles";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import { formatPercent } from "@/lib/utils";
 
@@ -32,13 +35,43 @@ async function getAccessToken(): Promise<string | null> {
 
 export default function DashboardPage() {
   const { selectedMembership, selectedOrgId } = useOrgContext();
+  const canView = hasMinimumRole(selectedMembership?.role, "manager");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [metrics, setMetrics] = useState<MetricsResponse | null>(null);
 
+  const summary = useMemo(() => {
+    if (!metrics) {
+      return null;
+    }
+
+    const campaigns = metrics.campaigns;
+    const assignmentsTotal = campaigns.reduce((sum, campaign) => sum + campaign.assignmentsTotal, 0);
+    const assignmentsCompleted = campaigns.reduce(
+      (sum, campaign) => sum + campaign.assignmentsCompleted,
+      0,
+    );
+    const avgCompletion =
+      campaigns.length > 0
+        ? campaigns.reduce((sum, campaign) => sum + campaign.completionRate, 0) / campaigns.length
+        : 0;
+    const avgAttestation =
+      campaigns.length > 0
+        ? campaigns.reduce((sum, campaign) => sum + campaign.attestationRate, 0) / campaigns.length
+        : 0;
+
+    return {
+      campaigns: campaigns.length,
+      assignmentsTotal,
+      assignmentsCompleted,
+      avgCompletion,
+      avgAttestation,
+    };
+  }, [metrics]);
+
   const loadMetrics = useCallback(async () => {
-    if (!selectedOrgId) {
+    if (!selectedOrgId || !canView) {
       return;
     }
 
@@ -68,10 +101,10 @@ export default function DashboardPage() {
 
     setMetrics(body as MetricsResponse);
     setLoading(false);
-  }, [selectedOrgId]);
+  }, [canView, selectedOrgId]);
 
   useEffect(() => {
-    if (!selectedOrgId) {
+    if (!selectedOrgId || !canView) {
       return;
     }
 
@@ -82,34 +115,73 @@ export default function DashboardPage() {
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [loadMetrics, selectedOrgId]);
+  }, [canView, loadMetrics, selectedOrgId]);
+
+  if (!canView) {
+    return (
+      <AdminAccessGate
+        currentRole={selectedMembership?.role}
+        orgName={selectedMembership?.orgName}
+        requiredRole="manager"
+        title="Compliance dashboard"
+      />
+    );
+  }
 
   return (
-    <section className="mx-auto max-w-6xl rounded-[1.8rem] border border-[#cfc2b5] bg-[#fff8ef] p-6">
+    <section className="mx-auto max-w-6xl space-y-5 rounded-[1.9rem] surface-card p-6 sm:p-7">
       <SessionStatus />
-      <h1 className="mt-2 font-display text-4xl text-[#10243e]">Compliance dashboard</h1>
-      <p className="mt-2 text-sm text-[#4f6379]">
-        Track completion and attestation outcomes for {selectedMembership?.orgName ?? "your workspace"}.
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="font-display text-4xl text-[#10244a]">Compliance dashboard</h1>
+          <p className="mt-2 text-sm text-[#4f6486]">
+            Monitor completion and attestation outcomes for {selectedMembership?.orgName ?? "your workspace"}.
+          </p>
+        </div>
 
-      <div className="mt-5 flex flex-wrap gap-3">
         <button
-          className="h-11 rounded-xl bg-[#0e8c89] px-5 text-sm font-semibold text-white hover:bg-[#0c7573]"
+          className="inline-flex h-10 items-center gap-2 rounded-full border border-[#d2ddef] bg-white px-4 text-sm font-semibold text-[#1f3b67] hover:bg-[#f4f8ff]"
           onClick={() => void loadMetrics()}
           type="button"
         >
-          {loading ? "Loading..." : "Refresh Metrics"}
+          <RefreshCcw className="h-4 w-4" />
+          {loading ? "Loading..." : "Refresh metrics"}
         </button>
       </div>
 
-      {error ? <p className="mt-4 text-sm text-[#a04e39]">{error}</p> : null}
+      {error ? <p className="text-sm text-[#a54f3a]">{error}</p> : null}
+
+      {summary ? (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <article className="rounded-2xl soft-chip p-4">
+            <p className="text-xs uppercase tracking-[0.16em] text-[#6079a2]">Campaigns</p>
+            <p className="mt-2 font-display text-4xl text-[#122d5b]">{summary.campaigns}</p>
+          </article>
+          <article className="rounded-2xl soft-chip p-4">
+            <p className="text-xs uppercase tracking-[0.16em] text-[#6079a2]">Assignments</p>
+            <p className="mt-2 font-display text-4xl text-[#122d5b]">{summary.assignmentsTotal}</p>
+            <p className="text-xs text-[#4f6486]">Completed: {summary.assignmentsCompleted}</p>
+          </article>
+          <article className="rounded-2xl soft-chip p-4">
+            <p className="text-xs uppercase tracking-[0.16em] text-[#6079a2]">Avg completion</p>
+            <p className="mt-2 font-display text-4xl text-[#122d5b]">{formatPercent(summary.avgCompletion)}</p>
+          </article>
+          <article className="rounded-2xl soft-chip p-4">
+            <p className="text-xs uppercase tracking-[0.16em] text-[#6079a2]">Avg attestation</p>
+            <p className="mt-2 font-display text-4xl text-[#122d5b]">{formatPercent(summary.avgAttestation)}</p>
+          </article>
+        </div>
+      ) : null}
 
       {metrics ? (
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2">
           {metrics.campaigns.map((campaign) => (
-            <article className="rounded-xl border border-[#cfc2b5] bg-[#f4ecdf] p-4" key={campaign.campaignId}>
-              <h2 className="font-display text-2xl text-[#11253e]">{campaign.name}</h2>
-              <ul className="mt-3 space-y-1 text-sm text-[#425c76]">
+            <article className="rounded-2xl soft-chip p-5" key={campaign.campaignId}>
+              <div className="flex items-start justify-between gap-3">
+                <h2 className="font-display text-3xl text-[#112f60]">{campaign.name}</h2>
+                <BarChart3 className="mt-1 h-5 w-5 text-[#1f5eff]" />
+              </div>
+              <ul className="mt-3 space-y-1 text-sm text-[#455d82]">
                 <li>Total assignments: {campaign.assignmentsTotal}</li>
                 <li>Completed assignments: {campaign.assignmentsCompleted}</li>
                 <li>Completion rate: {formatPercent(campaign.completionRate)}</li>

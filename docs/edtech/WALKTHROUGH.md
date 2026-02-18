@@ -1,0 +1,90 @@
+# Platform Walkthrough
+
+## 1. Local setup
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Configure environment:
+
+```bash
+cp .env.example .env.local
+```
+
+3. Run migration in Supabase SQL editor:
+
+- `supabase/migrations/20260218_edtech_v1.sql`
+
+4. Start app:
+
+```bash
+npm run dev
+```
+
+5. Open:
+
+- `http://localhost:3000`
+
+## 2. Sign in and workspace access
+
+1. Open `/product/auth`.
+2. Sign in with Google or magic link.
+3. If user belongs to one org, workspace auto-selects.
+4. If user belongs to multiple orgs, select org in top navigation.
+5. If user has no org membership, follow the no-access guidance page.
+6. In local/dev, you can use **Bootstrap owner access** on that page to self-assign owner role.
+
+## 3. Role authorization behavior
+
+- `learner`:
+  - Can access learner pages
+  - Cannot access manager/admin pages
+- `manager`:
+  - Can view policies/dashboard/campaign list
+  - Cannot generate/edit/publish campaigns
+- `admin` and `owner`:
+  - Full admin workflow (upload, generate, edit, publish, reminders, exports)
+
+## 4. Admin workflow (end-to-end)
+
+1. Go to `/product/admin/policies`.
+2. Upload policy file (PDF/DOCX/TXT).
+3. Confirm parse status becomes `ready`.
+4. Go to `/product/admin/campaigns`.
+5. Select ready policy sources and generate draft campaign.
+6. Open campaign editor and review modules/questions.
+7. Save draft updates.
+8. Publish campaign (supports idempotent retry semantics).
+9. Monitor rollout in `/product/admin/dashboard`.
+
+## 5. Learner workflow
+
+1. Go to `/product/learn`.
+2. Open assigned module.
+3. Submit quiz attempts.
+4. Complete attestation.
+5. Verify completion state in learner queue.
+
+## 6. Evidence and operations
+
+1. Generate CSV/PDF exports from org export APIs.
+2. Validate `x-evidence-checksum` response headers.
+3. Check `request_audit_logs` for traceability.
+4. Use nudge send endpoint with optional `Idempotency-Key`.
+
+## 7. Quality gates before release
+
+Run in order:
+
+```bash
+npm run lint
+npm run test
+npm run build
+npm run test:e2e:ci
+npm run pilot:preflight
+```
+
+`pilot:preflight` verifies env matrix, migration state, and smoke checks.

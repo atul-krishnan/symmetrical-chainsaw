@@ -56,6 +56,10 @@ export const nudgeSendSchema = z.object({
   mode: z.enum(["all_pending", "overdue_only"]).default("all_pending"),
 });
 
+export const bootstrapOwnerSchema = z.object({
+  orgName: z.string().trim().min(3).max(80).optional(),
+});
+
 export const storageMimeSchema = z.enum([
   "application/pdf",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",

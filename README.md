@@ -52,6 +52,7 @@ Open [http://localhost:3000](http://localhost:3000).
 - Single-org users auto-select their org workspace.
 - Multi-org users must explicitly choose a workspace in product navigation.
 - Users with no org membership see an actionable no-access page.
+- Local/dev builds include a `Bootstrap owner access` helper for first-user setup.
 
 ## Scripts
 
@@ -79,3 +80,4 @@ See `/docs/edtech`:
 - `SECURITY.md`
 - `OPERATIONS.md`
 - `DESIGN-SYSTEM.md`
+- `WALKTHROUGH.md`

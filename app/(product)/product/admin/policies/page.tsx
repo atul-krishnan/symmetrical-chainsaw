@@ -1,9 +1,12 @@
 "use client";
 
+import { RefreshCcw, Upload } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
+import { AdminAccessGate } from "@/components/product/admin-access-gate";
 import { SessionStatus } from "@/components/product/session-status";
 import { useOrgContext } from "@/lib/edtech/org-context";
+import { hasMinimumRole } from "@/lib/edtech/roles";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 type PolicyListResponse = {
@@ -27,8 +30,22 @@ async function getAccessToken(): Promise<string | null> {
   return data.session?.access_token ?? null;
 }
 
+function statusStyles(status: string): string {
+  if (status === "ready") {
+    return "bg-[#e8f9f2] text-[#1e7e5e] border-[#bde8d3]";
+  }
+
+  if (status === "failed") {
+    return "bg-[#fff1ed] text-[#a54f3a] border-[#f1cbc2]";
+  }
+
+  return "bg-[#eef4ff] text-[#305c9d] border-[#ccdff8]";
+}
+
 export default function PoliciesPage() {
   const { selectedMembership, selectedOrgId } = useOrgContext();
+  const canView = hasMinimumRole(selectedMembership?.role, "manager");
+  const canUpload = hasMinimumRole(selectedMembership?.role, "admin");
 
   const [title, setTitle] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -38,7 +55,7 @@ export default function PoliciesPage() {
   const [error, setError] = useState<string | null>(null);
 
   const loadPolicies = useCallback(async () => {
-    if (!selectedOrgId) {
+    if (!selectedOrgId || !canView) {
       return;
     }
 
@@ -67,10 +84,10 @@ export default function PoliciesPage() {
 
     setPolicies((body as PolicyListResponse).items);
     setLoadingPolicies(false);
-  }, [selectedOrgId]);
+  }, [canView, selectedOrgId]);
 
   useEffect(() => {
-    if (!selectedOrgId) {
+    if (!selectedOrgId || !canView) {
       return;
     }
 
@@ -81,11 +98,16 @@ export default function PoliciesPage() {
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [loadPolicies, selectedOrgId]);
+  }, [canView, loadPolicies, selectedOrgId]);
 
   const submit = async () => {
     setError(null);
     setStatus(null);
+
+    if (!canUpload) {
+      setError("Only admin and owner roles can upload policy files. Next action: request elevated access.");
+      return;
+    }
 
     if (!selectedOrgId) {
       setError("Select an organization workspace before uploading policies.");
@@ -125,78 +147,122 @@ export default function PoliciesPage() {
     }
 
     const successBody = body as { policyId: string; parseStatus: string };
-    setStatus(`Policy uploaded. Parse status: ${successBody.parseStatus}.`);
+    setStatus(`Policy uploaded. Parse status: ${successBody.parseStatus}. Next action: review readiness below.`);
     setTitle("");
     setFile(null);
     void loadPolicies();
   };
 
+  if (!canView) {
+    return (
+      <AdminAccessGate
+        currentRole={selectedMembership?.role}
+        orgName={selectedMembership?.orgName}
+        requiredRole="manager"
+        title="Policy workspace"
+      />
+    );
+  }
+
   return (
-    <section className="mx-auto max-w-5xl rounded-[1.8rem] border border-[#cfc2b5] bg-[#fff8ef] p-6">
+    <section className="mx-auto max-w-6xl space-y-5 rounded-[1.9rem] surface-card p-6 sm:p-7">
       <SessionStatus />
-      <h1 className="mt-2 font-display text-4xl text-[#10243e]">Policy ingestion</h1>
-      <p className="mt-2 text-sm text-[#4f6379]">
-        Upload a policy document for {selectedMembership?.orgName ?? "your workspace"}.
-      </p>
 
-      <div className="mt-6 grid gap-3">
-        <label className="space-y-1 text-sm">
-          <span>Policy title</span>
-          <input
-            className="h-11 rounded-xl border border-[#c9bcac] bg-white px-3"
-            onChange={(event) => setTitle(event.target.value)}
-            value={title}
-          />
-        </label>
-
-        <label className="space-y-1 text-sm">
-          <span>File (PDF, DOCX, TXT)</span>
-          <input
-            accept=".pdf,.docx,.txt"
-            className="rounded-xl border border-[#c9bcac] bg-white px-3 py-2"
-            onChange={(event) => setFile(event.target.files?.[0] ?? null)}
-            type="file"
-          />
-        </label>
-
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="font-display text-4xl text-[#10244a]">Policy ingestion</h1>
+          <p className="mt-2 text-sm text-[#4f6486]">
+            Upload policy documents for {selectedMembership?.orgName ?? "your workspace"} and convert obligations into training inputs.
+          </p>
+        </div>
         <button
-          className="mt-2 h-11 rounded-xl bg-[#0e8c89] text-sm font-semibold text-white hover:bg-[#0c7573]"
-          onClick={submit}
+          className="inline-flex h-10 items-center gap-2 rounded-full border border-[#d2ddef] bg-white px-4 text-sm font-semibold text-[#1f3b67] hover:bg-[#f4f8ff]"
+          onClick={() => void loadPolicies()}
           type="button"
         >
-          Upload and Parse
+          <RefreshCcw className="h-4 w-4" />
+          {loadingPolicies ? "Refreshing..." : "Refresh"}
         </button>
       </div>
 
-      {status ? <p className="mt-4 text-sm text-[#0b746e]">{status}</p> : null}
-      {error ? <p className="mt-4 text-sm text-[#a04e39]">{error}</p> : null}
+      <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="rounded-2xl soft-chip p-5">
+          <h2 className="font-display text-3xl text-[#122d5b]">Upload new policy</h2>
+          <p className="mt-2 text-sm text-[#4f6486]">Supported formats: PDF, DOCX, TXT</p>
 
-      <div className="mt-8">
-        <div className="flex items-center justify-between">
-          <h2 className="font-display text-2xl text-[#10243e]">Recent policies</h2>
-          <button
-            className="rounded-xl border border-[#c7baab] bg-white px-3 py-2 text-sm font-semibold text-[#13263f] hover:bg-[#f4eadc]"
-            onClick={() => void loadPolicies()}
-            type="button"
-          >
-            {loadingPolicies ? "Refreshing..." : "Refresh"}
-          </button>
+          <div className="mt-5 grid gap-3">
+            <label className="space-y-1 text-sm">
+              <span>Policy title</span>
+              <input
+                className="h-11 rounded-xl border border-[#d3deef] bg-white px-3"
+                onChange={(event) => setTitle(event.target.value)}
+                value={title}
+              />
+            </label>
+
+            <label className="space-y-1 text-sm">
+              <span>File</span>
+              <input
+                accept=".pdf,.docx,.txt"
+                className="rounded-xl border border-[#d3deef] bg-white px-3 py-2"
+                onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+                type="file"
+              />
+            </label>
+
+            <button
+              className="mt-1 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#1f5eff] text-sm font-semibold text-white hover:bg-[#154ee6] disabled:cursor-not-allowed disabled:opacity-55"
+              disabled={!canUpload}
+              onClick={submit}
+              type="button"
+            >
+              <Upload className="h-4 w-4" />
+              Upload and parse
+            </button>
+
+            {!canUpload ? (
+              <p className="text-xs text-[#7b6182]">
+                Upload is restricted to admin/owner roles.
+              </p>
+            ) : null}
+          </div>
         </div>
 
-        <div className="mt-3 space-y-2">
-          {policies.length === 0 ? (
-            <p className="text-sm text-[#4f6379]">No policy documents uploaded yet.</p>
-          ) : (
-            policies.map((policy) => (
-              <article className="rounded-xl border border-[#d0c4b8] bg-[#f5ecdf] p-3" key={policy.id}>
-                <p className="font-semibold text-[#10243e]">{policy.title}</p>
-                <p className="mt-1 text-xs text-[#4d6178]">
-                  {policy.parseStatus} | {new Date(policy.createdAt).toLocaleString()}
+        <aside className="rounded-2xl border border-[#c9d8ef] bg-[#0f2d66] p-5 text-sm text-[#d9e5ff]">
+          <h3 className="font-display text-2xl text-white">Operational notes</h3>
+          <ul className="mt-3 space-y-2">
+            <li>File type and extension must match.</li>
+            <li>Uploads are org-scoped and stored in secure buckets.</li>
+            <li>Parsing issues appear as `failed` with retry guidance.</li>
+            <li>Next action after parse: generate campaign draft.</li>
+          </ul>
+        </aside>
+      </div>
+
+      {status ? <p className="text-sm text-[#12795c]">{status}</p> : null}
+      {error ? <p className="text-sm text-[#a54f3a]">{error}</p> : null}
+
+      <div className="space-y-3">
+        <h2 className="font-display text-3xl text-[#10244a]">Recent policies</h2>
+        {policies.length === 0 ? (
+          <p className="text-sm text-[#4f6486]">No policy documents uploaded yet.</p>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-2">
+            {policies.map((policy) => (
+              <article className="rounded-2xl soft-chip p-4" key={policy.id}>
+                <div className="flex items-start justify-between gap-3">
+                  <p className="font-semibold text-[#132f61]">{policy.title}</p>
+                  <span className={`rounded-full border px-2 py-0.5 text-xs font-semibold ${statusStyles(policy.parseStatus)}`}>
+                    {policy.parseStatus}
+                  </span>
+                </div>
+                <p className="mt-2 text-xs text-[#4f6486]">
+                  {policy.fileMimeType} | Created {new Date(policy.createdAt).toLocaleString()}
                 </p>
               </article>
-            ))
-          )}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

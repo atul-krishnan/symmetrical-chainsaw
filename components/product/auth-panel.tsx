@@ -1,29 +1,63 @@
 "use client";
 
 import { KeyRound, Mail } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 export function AuthPanel() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) {
+      return;
+    }
+
+    let active = true;
+    void supabase.auth.getSession().then(({ data }) => {
+      if (active && data.session?.access_token) {
+        router.replace("/product/admin/dashboard");
+      }
+    });
+
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.access_token) {
+        router.replace("/product/admin/dashboard");
+      }
+    });
+
+    return () => {
+      active = false;
+      data.subscription.unsubscribe();
+    };
+  }, [router]);
+
   const signInWithGoogle = async () => {
     setError(null);
+    setStatus(null);
     const supabase = getSupabaseBrowserClient();
     if (!supabase) {
       setError("Supabase environment is missing. Configure .env.local first.");
       return;
     }
 
-    await supabase.auth.signInWithOAuth({
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
         redirectTo: `${window.location.origin}/product/admin/dashboard`,
       },
     });
+
+    if (oauthError) {
+      setError(
+        `${oauthError.message}. Next action: enable Google provider in Supabase Auth settings.`,
+      );
+    }
   };
 
   const signInWithMagicLink = async () => {

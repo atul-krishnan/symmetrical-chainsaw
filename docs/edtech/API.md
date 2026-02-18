@@ -21,6 +21,9 @@ All API errors use this envelope:
 
 - `GET /api/me/org-memberships`
   - Returns `{ memberships: [{ orgId, orgName, role }] }`
+- `POST /api/me/bootstrap-owner` (dev bootstrap)
+  - Creates owner membership for signed-in user if they have no org memberships.
+  - If no organizations exist, creates one and assigns owner role.
 - `GET /api/me/assignments`
 - `POST /api/me/modules/[moduleId]/attempts`
 - `POST /api/me/campaigns/[campaignId]/attest`

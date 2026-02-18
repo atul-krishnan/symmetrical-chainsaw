@@ -25,6 +25,9 @@ export const runtimeEnv = {
   posthogHost: valueOrEmpty(process.env.NEXT_PUBLIC_POSTHOG_HOST),
   posthogEnabled:
     valueOrEmpty(process.env.NEXT_PUBLIC_POSTHOG_ENABLED).toLowerCase() === "true",
+  allowDevBootstrap:
+    valueOrEmpty(process.env.ALLOW_DEV_BOOTSTRAP).toLowerCase() === "true" ||
+    process.env.NODE_ENV !== "production",
 };
 
 export const hasSupabaseEnv = (): boolean =>

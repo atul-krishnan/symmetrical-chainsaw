@@ -1,11 +1,14 @@
 "use client";
 
-import { CircleUserRound, LayoutGrid, Menu, X } from "lucide-react";
+import { CircleUserRound, LayoutGrid, LogOut, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { useOrgContext } from "@/lib/edtech/org-context";
+import { hasMinimumRole } from "@/lib/edtech/roles";
+import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import type { OrgRole } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 function withOrg(path: string, orgId: string | null): string {
@@ -17,17 +20,34 @@ function withOrg(path: string, orgId: string | null): string {
   return `${path}${separator}org=${orgId}`;
 }
 
-const NAV_ITEMS = [
-  { href: "/product/admin/policies", label: "Policies" },
-  { href: "/product/admin/campaigns", label: "Campaigns" },
-  { href: "/product/admin/dashboard", label: "Dashboard" },
-  { href: "/product/learn", label: "Learner" },
+const NAV_ITEMS: Array<{ href: string; label: string; minRole: OrgRole }> = [
+  { href: "/product/admin/policies", label: "Policies", minRole: "manager" },
+  { href: "/product/admin/campaigns", label: "Campaigns", minRole: "admin" },
+  { href: "/product/admin/dashboard", label: "Dashboard", minRole: "manager" },
+  { href: "/product/learn", label: "Learner", minRole: "learner" },
 ];
 
 export function ProductNav() {
   const { memberships, selectedOrgId, selectedMembership, setSelectedOrgId, loading } = useOrgContext();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+
+  const role = selectedMembership?.role;
+  const visibleItems = useMemo(
+    () => NAV_ITEMS.filter((item) => hasMinimumRole(role, item.minRole)),
+    [role],
+  );
+
+  const signOut = async () => {
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) {
+      window.location.href = "/product/auth";
+      return;
+    }
+
+    await supabase.auth.signOut();
+    window.location.href = "/product/auth";
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-[#d7e0ee] bg-white/86 backdrop-blur-xl">
@@ -40,7 +60,7 @@ export function ProductNav() {
         </Link>
 
         <nav aria-label="Product" className="hidden flex-wrap items-center gap-2 text-sm lg:flex">
-          {NAV_ITEMS.map((item) => {
+          {visibleItems.map((item) => {
             const active = pathname.startsWith(item.href);
             return (
               <Link
@@ -92,6 +112,14 @@ export function ProductNav() {
           >
             <CircleUserRound className="h-4 w-4" />
           </Link>
+          <button
+            className="inline-flex h-10 items-center gap-1 rounded-full border border-[#d3ddec] bg-white px-3 text-sm font-semibold text-[#244372] hover:bg-[#f4f8ff]"
+            onClick={() => void signOut()}
+            type="button"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign out
+          </button>
         </div>
 
         <button
@@ -112,7 +140,7 @@ export function ProductNav() {
         )}
       >
         <nav aria-label="Mobile product" className="space-y-2">
-          {NAV_ITEMS.map((item) => {
+          {visibleItems.map((item) => {
             const active = pathname.startsWith(item.href);
             return (
               <Link
@@ -150,6 +178,15 @@ export function ProductNav() {
               </select>
             </label>
           ) : null}
+
+          <button
+            className="mt-2 inline-flex h-10 w-full items-center justify-center gap-1 rounded-xl border border-[#d3ddec] bg-white text-sm font-semibold text-[#244372] hover:bg-[#f4f8ff]"
+            onClick={() => void signOut()}
+            type="button"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign out
+          </button>
         </nav>
       </div>
     </header>
