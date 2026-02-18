@@ -132,6 +132,12 @@ export type UserProfile = {
   email: string;
 };
 
+export type OrgMembership = {
+  orgId: string;
+  orgName: string;
+  role: OrgRole;
+};
+
 export type ApiErrorCode =
   | "AUTH_ERROR"
   | "VALIDATION_ERROR"

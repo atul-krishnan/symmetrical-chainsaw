@@ -19,7 +19,8 @@ export async function GET(
   const { orgId, campaignId } = await context.params;
 
   return withApiHandler(request, async () => {
-    const { supabase } = await requireOrgAccess(request, orgId, "learner");
+    const { supabase, role } = await requireOrgAccess(request, orgId, "learner");
+    const canViewAnswerKey = role === "owner" || role === "admin" || role === "manager";
 
     const campaignResult = await supabase
       .from("learning_campaigns")
@@ -102,7 +103,7 @@ export async function GET(
           moduleId: q.module_id,
           prompt: q.prompt,
           choices: q.choices_json,
-          correctChoiceIndex: q.correct_choice_index,
+          ...(canViewAnswerKey ? { correctChoiceIndex: q.correct_choice_index } : {}),
           explanation: q.explanation,
           createdAt: q.created_at,
         })),

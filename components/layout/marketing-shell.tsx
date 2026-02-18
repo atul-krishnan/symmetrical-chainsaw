@@ -6,10 +6,11 @@ import { MarketingNav } from "@/components/layout/marketing-nav";
 export function MarketingShell({ children }: PropsWithChildren) {
   return (
     <div className="relative min-h-screen overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 -z-10 app-grid" />
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute left-0 top-0 h-[24rem] w-[24rem] rounded-full bg-[#f7dfbb]/50 blur-3xl" />
-        <div className="absolute right-0 top-32 h-[26rem] w-[26rem] rounded-full bg-[#d9ece7]/70 blur-3xl" />
-        <div className="absolute bottom-0 left-1/3 h-[22rem] w-[22rem] rounded-full bg-[#efd3c7]/40 blur-3xl" />
+        <div className="absolute left-[-14rem] top-[-8rem] h-[34rem] w-[34rem] rounded-full bg-[#2f6dff1a] blur-3xl" />
+        <div className="absolute right-[-12rem] top-28 h-[30rem] w-[30rem] rounded-full bg-[#17a6ff1a] blur-3xl" />
+        <div className="absolute bottom-[-12rem] left-1/3 h-[26rem] w-[26rem] rounded-full bg-[#7bb6ff1f] blur-3xl" />
       </div>
       <MarketingNav />
       <main>{children}</main>

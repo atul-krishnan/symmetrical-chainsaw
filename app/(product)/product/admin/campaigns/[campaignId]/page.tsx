@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 
 import { SessionStatus } from "@/components/product/session-status";
+import { useOrgContext } from "@/lib/edtech/org-context";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 // ---------------------------------------------------------------------------
@@ -100,8 +101,8 @@ function simpleMarkdownToHtml(md: string): string {
 
 export default function CampaignEditorPage() {
   const { campaignId } = useParams<{ campaignId: string }>();
+  const { selectedOrgId, selectedMembership } = useOrgContext();
 
-  const [orgId, setOrgId] = useState("");
   const [detail, setDetail] = useState<CampaignDetail | null>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [previewModule, setPreviewModule] = useState<number | null>(null);
@@ -112,7 +113,7 @@ export default function CampaignEditorPage() {
 
   // Load campaign data
   const loadCampaign = useCallback(async () => {
-    if (!orgId) return;
+    if (!selectedOrgId) return;
     setLoading(true);
     setError(null);
     setSuccess(null);
@@ -125,7 +126,7 @@ export default function CampaignEditorPage() {
     }
 
     const response = await fetch(
-      `/api/orgs/${orgId}/campaigns/${campaignId}`,
+      `/api/orgs/${selectedOrgId}/campaigns/${campaignId}`,
       { headers: { Authorization: `Bearer ${token}` } },
     );
 
@@ -138,11 +139,29 @@ export default function CampaignEditorPage() {
 
     setDetail(body as CampaignDetail);
     setLoading(false);
-  }, [orgId, campaignId]);
+  }, [selectedOrgId, campaignId]);
+
+  useEffect(() => {
+    if (!selectedOrgId) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      void loadCampaign();
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [loadCampaign, selectedOrgId]);
 
   // Save draft
   const saveDraft = async () => {
     if (!detail) return;
+    if (!selectedOrgId) {
+      setError("Select an organization workspace before saving.");
+      return;
+    }
     setSaving(true);
     setError(null);
     setSuccess(null);
@@ -155,7 +174,7 @@ export default function CampaignEditorPage() {
     }
 
     const response = await fetch(
-      `/api/orgs/${orgId}/campaigns/${campaignId}`,
+      `/api/orgs/${selectedOrgId}/campaigns/${campaignId}`,
       {
         method: "PUT",
         headers: {
@@ -196,6 +215,10 @@ export default function CampaignEditorPage() {
   // Publish campaign
   const publishCampaign = async () => {
     if (!detail) return;
+    if (!selectedOrgId) {
+      setError("Select an organization workspace before publishing.");
+      return;
+    }
     setSaving(true);
     setError(null);
     setSuccess(null);
@@ -208,7 +231,7 @@ export default function CampaignEditorPage() {
     }
 
     const response = await fetch(
-      `/api/orgs/${orgId}/campaigns/${campaignId}/publish`,
+      `/api/orgs/${selectedOrgId}/campaigns/${campaignId}/publish`,
       {
         method: "POST",
         headers: {
@@ -322,7 +345,6 @@ export default function CampaignEditorPage() {
     <section className="mx-auto max-w-6xl space-y-6 py-6 px-4 sm:px-6">
       <SessionStatus />
 
-      {/* Org ID loader (before campaign is loaded) */}
       {!detail && (
         <div className="rounded-[1.8rem] border border-[#cfc2b5] bg-[#fff8ef] p-6 space-y-4">
           <h1 className="font-display text-4xl text-[#10243e]">Campaign Editor</h1>
@@ -332,26 +354,32 @@ export default function CampaignEditorPage() {
               {campaignId}
             </code>
           </p>
-
-          <div className="flex flex-wrap gap-3 items-end">
-            <label className="space-y-1 text-sm flex-1 min-w-[18rem]">
-              <span>Organization ID</span>
-              <input
-                className="h-11 w-full rounded-xl border border-[#c9bcac] bg-white px-3"
-                onChange={(e) => setOrgId(e.target.value)}
-                value={orgId}
-                placeholder="Enter your org ID"
-              />
-            </label>
+          <p className="text-sm text-[#4f6379]">
+            Workspace:{" "}
+            <span className="font-semibold text-[#10243e]">
+              {selectedMembership?.orgName ?? "Select an organization in the top nav"}
+            </span>
+          </p>
+          {selectedOrgId ? (
+            <p className="text-sm text-[#4f6379]">
+              {loading
+                ? "Loading campaign content..."
+                : "Campaign content not loaded yet. Next action: retry."}
+            </p>
+          ) : (
+            <p className="text-sm text-[#a04e39]">
+              Next action: choose an organization workspace from the top navigation.
+            </p>
+          )}
+          {selectedOrgId && !loading ? (
             <button
-              className="h-11 rounded-xl bg-[#0e8c89] px-6 text-sm font-semibold text-white hover:bg-[#0c7573] disabled:opacity-50"
-              disabled={!orgId || loading}
-              onClick={loadCampaign}
+              className="h-11 rounded-xl bg-[#0e8c89] px-6 text-sm font-semibold text-white hover:bg-[#0c7573]"
+              onClick={() => void loadCampaign()}
               type="button"
             >
-              {loading ? "Loading…" : "Load Campaign"}
+              Retry load
             </button>
-          </div>
+          ) : null}
         </div>
       )}
 

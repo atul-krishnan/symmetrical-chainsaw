@@ -15,9 +15,10 @@ export default defineConfig({
   webServer: useExternalBaseUrl
     ? undefined
     : {
-        command: "npm run dev -- --port 3010",
+        command: "npm run start -- --port 3010",
         port: 3010,
-        reuseExistingServer: true,
+        reuseExistingServer: false,
+        timeout: 120_000,
       },
   projects: [
     {

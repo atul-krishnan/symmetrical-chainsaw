@@ -6,6 +6,7 @@ import { ANALYTICS_EVENTS } from "@/lib/analytics/events";
 import { runtimeEnv } from "@/lib/env";
 import { enforceRateLimit } from "@/lib/edtech/rate-limit";
 import { writeRequestAuditLog } from "@/lib/edtech/request-audit-log";
+import { normalizePolicyUploadFile } from "@/lib/edtech/policy-file";
 import { extractObligations, extractTextFromFile } from "@/lib/edtech/policy-parser";
 import { policyUploadSchema, storageMimeSchema } from "@/lib/edtech/validation";
 import { logInfo } from "@/lib/observability/logger";
@@ -103,8 +104,13 @@ export async function POST(
     }
 
     const policyId = randomUUID();
-    const fileExtension = file.name.includes(".") ? file.name.split(".").pop() : "bin";
-    const filePath = `org/${orgId}/${policyId}.${fileExtension}`;
+    const normalizedFile = normalizePolicyUploadFile({
+      orgId,
+      policyId,
+      fileName: file.name,
+      mimeType: file.type,
+    });
+    const filePath = normalizedFile.filePath;
 
     const insertResult = await supabase
       .from("policy_documents")

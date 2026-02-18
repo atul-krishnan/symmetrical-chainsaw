@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { SessionStatus } from "@/components/product/session-status";
-import { formatPercent } from "@/lib/utils";
+import { useOrgContext } from "@/lib/edtech/org-context";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { formatPercent } from "@/lib/utils";
 
 type MetricsResponse = {
   orgId: string;
@@ -19,32 +20,39 @@ type MetricsResponse = {
   }>;
 };
 
+async function getAccessToken(): Promise<string | null> {
+  const supabase = getSupabaseBrowserClient();
+  if (!supabase) {
+    return null;
+  }
+
+  const { data } = await supabase.auth.getSession();
+  return data.session?.access_token ?? null;
+}
+
 export default function DashboardPage() {
-  const [orgId, setOrgId] = useState("");
+  const { selectedMembership, selectedOrgId } = useOrgContext();
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [metrics, setMetrics] = useState<MetricsResponse | null>(null);
 
-  const loadMetrics = async () => {
-    setLoading(true);
-    setError(null);
-
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) {
-      setError("Supabase is not configured in this environment.");
-      setLoading(false);
+  const loadMetrics = useCallback(async () => {
+    if (!selectedOrgId) {
       return;
     }
 
-    const { data } = await supabase.auth.getSession();
-    const token = data.session?.access_token;
+    setLoading(true);
+    setError(null);
+
+    const token = await getAccessToken();
     if (!token) {
       setError("Sign in before loading dashboard metrics.");
       setLoading(false);
       return;
     }
 
-    const response = await fetch(`/api/orgs/${orgId}/dashboard`, {
+    const response = await fetch(`/api/orgs/${selectedOrgId}/dashboard`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -60,27 +68,37 @@ export default function DashboardPage() {
 
     setMetrics(body as MetricsResponse);
     setLoading(false);
-  };
+  }, [selectedOrgId]);
+
+  useEffect(() => {
+    if (!selectedOrgId) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      void loadMetrics();
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [loadMetrics, selectedOrgId]);
 
   return (
     <section className="mx-auto max-w-6xl rounded-[1.8rem] border border-[#cfc2b5] bg-[#fff8ef] p-6">
       <SessionStatus />
       <h1 className="mt-2 font-display text-4xl text-[#10243e]">Compliance dashboard</h1>
-      <p className="mt-2 text-sm text-[#4f6379]">Track completion and attestation outcomes by campaign.</p>
+      <p className="mt-2 text-sm text-[#4f6379]">
+        Track completion and attestation outcomes for {selectedMembership?.orgName ?? "your workspace"}.
+      </p>
 
       <div className="mt-5 flex flex-wrap gap-3">
-        <input
-          className="h-11 min-w-[22rem] rounded-xl border border-[#c9bcac] bg-white px-3"
-          onChange={(event) => setOrgId(event.target.value)}
-          placeholder="Organization ID"
-          value={orgId}
-        />
         <button
           className="h-11 rounded-xl bg-[#0e8c89] px-5 text-sm font-semibold text-white hover:bg-[#0c7573]"
-          onClick={loadMetrics}
+          onClick={() => void loadMetrics()}
           type="button"
         >
-          {loading ? "Loading..." : "Load Metrics"}
+          {loading ? "Loading..." : "Refresh Metrics"}
         </button>
       </div>
 

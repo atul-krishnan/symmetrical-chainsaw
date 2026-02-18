@@ -10,7 +10,7 @@ export async function GET(request: Request) {
     const result = await supabase
       .from("assignments")
       .select(
-        "id,state,due_at,module_id,campaign_id,learning_modules!inner(id,title,role_track,campaign_id)",
+        "id,org_id,state,due_at,module_id,campaign_id,learning_modules!inner(id,title,role_track,campaign_id)",
       )
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
@@ -37,17 +37,44 @@ export async function GET(request: Request) {
       };
     });
 
-    await writeRequestAuditLog({
-      supabase,
-      requestId,
-      route,
-      action: "assignments_view",
-      statusCode: 200,
-      userId: user.id,
-      metadata: {
-        assignmentCount: items.length,
-      },
-    });
+    const orgIds = [
+      ...new Set(
+        (result.data ?? [])
+          .map((item) => item.org_id)
+          .filter((value): value is string => Boolean(value)),
+      ),
+    ];
+
+    if (orgIds.length === 0) {
+      await writeRequestAuditLog({
+        supabase,
+        requestId,
+        route,
+        action: "assignments_view",
+        statusCode: 200,
+        userId: user.id,
+        metadata: {
+          assignmentCount: items.length,
+        },
+      });
+    } else {
+      await Promise.all(
+        orgIds.map((orgId) =>
+          writeRequestAuditLog({
+            supabase,
+            requestId,
+            route,
+            action: "assignments_view",
+            statusCode: 200,
+            orgId,
+            userId: user.id,
+            metadata: {
+              assignmentCount: items.length,
+            },
+          }),
+        ),
+      );
+    }
 
     return { items };
   });

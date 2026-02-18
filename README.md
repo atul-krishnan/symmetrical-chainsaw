@@ -1,6 +1,6 @@
 # PolicyPilot
 
-PolicyPilot is a greenfield Next.js + Supabase enterprise EdTech product that converts AI policy documents into role-based compliance training workflows.
+PolicyPilot is a Next.js + Supabase enterprise EdTech product that converts AI policy documents into role-based compliance training workflows.
 
 ## Core outcomes
 
@@ -34,14 +34,6 @@ npm install
 cp .env.example .env.local
 ```
 
-Set values for:
-
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `ATTESTATION_SIGNING_SECRET`
-- optional `OPENAI_API_KEY` and `RESEND_API_KEY`
-
 3. Run database migration in Supabase SQL editor:
 
 - `supabase/migrations/20260218_edtech_v1.sql`
@@ -54,18 +46,28 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-## Routes
+## Product onboarding behavior
 
-- Marketing: `/`, `/pilot`, `/security`, `/roi`
-- Product: `/product/auth`, `/product/admin/*`, `/product/learn/*`
-- API: `/api/orgs/*` and `/api/me/*`
+- Users load organization memberships from `GET /api/me/org-memberships`.
+- Single-org users auto-select their org workspace.
+- Multi-org users must explicitly choose a workspace in product navigation.
+- Users with no org membership see an actionable no-access page.
 
 ## Scripts
 
 - `npm run lint`
 - `npm run test`
-- `npm run test:coverage`
+- `npm run build`
 - `npm run test:e2e`
+- `npm run smoke:live`
+- `npm run pilot:preflight`
+
+## Pilot hardening notes
+
+- `publish` and `nudges/send` support optional `Idempotency-Key` headers.
+- Publish endpoint is replay-safe and returns success for already-published campaigns.
+- Policy upload validates MIME/extension consistency and sanitizes storage paths.
+- Request audit logs persist idempotency key hash metadata.
 
 ## Documentation
 
@@ -77,8 +79,3 @@ See `/docs/edtech`:
 - `SECURITY.md`
 - `OPERATIONS.md`
 - `DESIGN-SYSTEM.md`
-
-## Notes
-
-- If `OPENAI_API_KEY` is unset, generation uses deterministic fallback content.
-- If `RESEND_API_KEY` is unset, invite/reminder sends are logged and skipped.

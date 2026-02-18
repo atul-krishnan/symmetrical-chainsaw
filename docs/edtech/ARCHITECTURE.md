@@ -11,6 +11,7 @@
 - `lib/edtech`: policy parsing, campaign generation, grading, attestation, exports, notifications
 - `lib/observability`: structured logs and request context
 - `lib/api`: error model and route wrappers
+- `lib/edtech/org-context`: client workspace membership and org selection state
 
 ## Data model
 
@@ -28,3 +29,4 @@ Primary entities:
 - RLS enabled for all tenant tables
 - Input and output validation with Zod
 - HMAC checksum on attestation and export evidence
+- Idempotency hash persistence in request audit metadata for retry safety
