@@ -44,6 +44,32 @@ npm run pilot:preflight
 - staging live smoke flow
 - optional pilot live smoke flow
 
+## Deployment flow (Vercel)
+
+1. Authenticate once:
+
+```bash
+npx vercel@50.18.2 login
+```
+
+2. Link project (first run only):
+
+```bash
+npx vercel@50.18.2 link
+```
+
+3. Deploy preview:
+
+```bash
+npm run deploy:preview
+```
+
+4. Promote production after release gates are green:
+
+```bash
+npm run deploy:prod
+```
+
 ## Live smoke flow
 
 `npm run smoke:live` validates:

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 const SECURITY_ITEMS = [
   {
     title: "Access controls",
-    body: "Magic link + Google auth, role-gated routes, and minimum-role checks across admin endpoints.",
+    body: "Google auth plus email/password signup and magic link login, with role-gated routes and minimum-role checks across admin endpoints.",
   },
   {
     title: "Tenant isolation",
@@ -58,8 +58,8 @@ export default function SecurityPage() {
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
               <article className="metric-tile">
                 <p className="text-xs uppercase tracking-[0.15em] text-[#6684af]">Auth modes</p>
-                <p className="mt-1 font-display text-3xl text-[#11386f]">2</p>
-                <p className="text-xs text-[#57739f]">Google + magic link</p>
+                <p className="mt-1 font-display text-3xl text-[#11386f]">3</p>
+                <p className="text-xs text-[#57739f]">Google + email/password + magic link</p>
               </article>
               <article className="metric-tile">
                 <p className="text-xs uppercase tracking-[0.15em] text-[#6684af]">RLS coverage</p>

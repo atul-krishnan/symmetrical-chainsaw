@@ -31,11 +31,13 @@ npm run dev
 ## 2. Sign in and workspace access
 
 1. Open `/product/auth`.
-2. Sign in with Google or magic link.
-3. If user belongs to one org, workspace auto-selects.
-4. If user belongs to multiple orgs, select org in top navigation.
-5. If user has no org membership, follow the no-access guidance page.
-6. In local/dev, you can use **Bootstrap owner access** on that page to self-assign owner role.
+2. Existing users can sign in with Google, email/password, or magic link.
+3. New users without Google can use **Sign up** to create an email/password account.
+4. If password is forgotten, use **Forgot password?** and complete reset at `/product/auth/reset`.
+5. If user belongs to one org, workspace auto-selects.
+6. If user belongs to multiple orgs, select org in top navigation.
+7. If user has no org membership, follow the no-access guidance page.
+8. In local/dev, you can use **Bootstrap owner access** on that page to self-assign owner role.
 
 ## 3. Role authorization behavior
 

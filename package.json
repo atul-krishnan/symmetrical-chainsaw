@@ -15,7 +15,9 @@
     "test:e2e:ui": "playwright test --ui",
     "seed": "tsx scripts/seed.ts",
     "smoke:live": "tsx scripts/smoke-live.ts",
-    "pilot:preflight": "tsx scripts/pilot-preflight.ts"
+    "pilot:preflight": "tsx scripts/pilot-preflight.ts",
+    "deploy:preview": "npx --yes vercel@50.18.2 --yes",
+    "deploy:prod": "npx --yes vercel@50.18.2 --prod --yes"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0",

@@ -113,7 +113,7 @@ const FAQS = [
   },
   {
     q: "Do we need LMS or SCIM integration to start?",
-    a: "No. For MVP pilots, PolicyPilot runs as a standalone workspace with magic-link and Google authentication.",
+    a: "No. For MVP pilots, PolicyPilot runs as a standalone workspace with Google auth, email/password signup, and magic-link access.",
   },
   {
     q: "What evidence do compliance teams get?",

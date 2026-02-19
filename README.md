@@ -48,6 +48,8 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Product onboarding behavior
 
+- Auth modes: Google OAuth, email/password sign-up + sign-in, and magic link access.
+- Password recovery: from `/product/auth`, enter email and use **Forgot password?**, then complete reset at `/product/auth/reset`.
 - Users load organization memberships from `GET /api/me/org-memberships`.
 - Single-org users auto-select their org workspace.
 - Multi-org users must explicitly choose a workspace in product navigation.
@@ -62,6 +64,8 @@ Open [http://localhost:3000](http://localhost:3000).
 - `npm run test:e2e`
 - `npm run smoke:live`
 - `npm run pilot:preflight`
+- `npm run deploy:preview`
+- `npm run deploy:prod`
 
 ## Pilot hardening notes
 
