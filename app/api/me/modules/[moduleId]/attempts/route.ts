@@ -51,7 +51,7 @@ export async function POST(
 
     const assignmentResult = await supabase
       .from("assignments")
-      .select("id,state")
+      .select("id,state,material_acknowledged_at")
       .eq("module_id", moduleId)
       .eq("campaign_id", moduleResult.data.campaign_id)
       .eq("org_id", moduleResult.data.org_id)
@@ -60,6 +60,28 @@ export async function POST(
 
     if (assignmentResult.error || !assignmentResult.data) {
       throw new ApiError("AUTH_ERROR", "No assignment found for this module", 403);
+    }
+
+    const campaignResult = await supabase
+      .from("learning_campaigns")
+      .select("flow_version")
+      .eq("id", moduleResult.data.campaign_id)
+      .eq("org_id", moduleResult.data.org_id)
+      .single();
+
+    if (campaignResult.error || !campaignResult.data) {
+      throw new ApiError("NOT_FOUND", "Campaign not found for module", 404);
+    }
+
+    if (
+      campaignResult.data.flow_version === 2 &&
+      !assignmentResult.data.material_acknowledged_at
+    ) {
+      throw new ApiError(
+        "CONFLICT",
+        "Acknowledge the learning material before starting the quiz.",
+        409,
+      );
     }
 
     const questionResult = await supabase

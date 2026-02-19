@@ -4,8 +4,21 @@ import { ApiError } from "@/lib/api/errors";
 import { parseJsonBody } from "@/lib/api/request";
 import { withApiHandler } from "@/lib/api/route-helpers";
 import { requireOrgAccess } from "@/lib/edtech/db";
+import { computeQuizSyncHash, quizNeedsRegeneration } from "@/lib/edtech/quiz-sync";
 import { writeRequestAuditLog } from "@/lib/edtech/request-audit-log";
+import { moduleMediaEmbedSchema } from "@/lib/edtech/types";
 import { campaignUpdateSchema } from "@/lib/edtech/validation";
+
+function parseMediaEmbeds(input: unknown) {
+  if (!Array.isArray(input)) {
+    return [];
+  }
+
+  return input
+    .map((item) => moduleMediaEmbedSchema.safeParse(item))
+    .filter((result) => result.success)
+    .map((result) => result.data);
+}
 
 // ---------------------------------------------------------------------------
 // GET /api/orgs/:orgId/campaigns/:campaignId
@@ -80,34 +93,50 @@ export async function GET(
         dueAt: campaign.due_at,
         policyIds: campaign.policy_ids,
         roleTracks: campaign.role_tracks,
+        flowVersion: campaign.flow_version ?? 1,
         status: campaign.status,
         publishedAt: campaign.published_at,
         createdBy: campaign.created_by,
         createdAt: campaign.created_at,
         updatedAt: campaign.updated_at,
       },
-      modules: (modulesResult.data ?? []).map((m) => ({
-        id: m.id,
-        campaignId: m.campaign_id,
-        orgId: m.org_id,
-        roleTrack: m.role_track,
-        title: m.title,
-        summary: m.summary,
-        contentMarkdown: m.content_markdown,
-        passScore: m.pass_score,
-        estimatedMinutes: m.estimated_minutes,
-        createdAt: m.created_at,
-        updatedAt: m.updated_at,
-        quizQuestions: (questionsByModule.get(m.id) ?? []).map((q) => ({
-          id: q.id,
-          moduleId: q.module_id,
-          prompt: q.prompt,
-          choices: q.choices_json,
-          ...(canViewAnswerKey ? { correctChoiceIndex: q.correct_choice_index } : {}),
-          explanation: q.explanation,
-          createdAt: q.created_at,
-        })),
-      })),
+      modules: (modulesResult.data ?? []).map((m) => {
+        const mediaEmbeds = parseMediaEmbeds(m.media_embeds_json);
+        const syncSource = {
+          roleTrack: m.role_track,
+          title: m.title,
+          summary: m.summary,
+          contentMarkdown: m.content_markdown,
+        };
+
+        return {
+          id: m.id,
+          campaignId: m.campaign_id,
+          orgId: m.org_id,
+          roleTrack: m.role_track,
+          title: m.title,
+          summary: m.summary,
+          contentMarkdown: m.content_markdown,
+          passScore: m.pass_score,
+          estimatedMinutes: m.estimated_minutes,
+          mediaEmbeds,
+          quizNeedsRegeneration:
+            (campaign.flow_version ?? 1) === 2
+              ? quizNeedsRegeneration(m.quiz_sync_hash, syncSource)
+              : false,
+          createdAt: m.created_at,
+          updatedAt: m.updated_at,
+          quizQuestions: (questionsByModule.get(m.id) ?? []).map((q) => ({
+            id: q.id,
+            moduleId: q.module_id,
+            prompt: q.prompt,
+            choices: q.choices_json,
+            ...(canViewAnswerKey ? { correctChoiceIndex: q.correct_choice_index } : {}),
+            explanation: q.explanation,
+            createdAt: q.created_at,
+          })),
+        };
+      }),
     };
   });
 }
@@ -167,18 +196,62 @@ export async function PUT(
       }
     }
 
+    let markedStaleModules = 0;
+
     if (parsed.data.modules) {
       for (const moduleInput of parsed.data.modules) {
+        const existingModuleResult = await supabase
+          .from("learning_modules")
+          .select("id,role_track,title,summary,content_markdown,quiz_sync_hash")
+          .eq("id", moduleInput.id)
+          .eq("campaign_id", campaignId)
+          .eq("org_id", orgId)
+          .single();
+
+        if (existingModuleResult.error || !existingModuleResult.data) {
+          throw new ApiError(
+            "NOT_FOUND",
+            existingModuleResult.error?.message ?? "Module not found",
+            404,
+          );
+        }
+
+        const existingModule = existingModuleResult.data;
+        const previousHash = computeQuizSyncHash({
+          roleTrack: existingModule.role_track,
+          title: existingModule.title,
+          summary: existingModule.summary,
+          contentMarkdown: existingModule.content_markdown,
+        });
+        const updatedHash = computeQuizSyncHash({
+          roleTrack: existingModule.role_track,
+          title: moduleInput.title,
+          summary: moduleInput.summary,
+          contentMarkdown: moduleInput.contentMarkdown,
+        });
+        const contentChanged = previousHash !== updatedHash;
+
+        const moduleUpdatePayload: Record<string, unknown> = {
+          title: moduleInput.title,
+          summary: moduleInput.summary,
+          content_markdown: moduleInput.contentMarkdown,
+          pass_score: moduleInput.passScore,
+          estimated_minutes: moduleInput.estimatedMinutes,
+          updated_at: new Date().toISOString(),
+        };
+
+        if (moduleInput.mediaEmbeds) {
+          moduleUpdatePayload.media_embeds_json = moduleInput.mediaEmbeds;
+        }
+
+        if (contentChanged) {
+          moduleUpdatePayload.quiz_sync_hash = null;
+          markedStaleModules += 1;
+        }
+
         const moduleUpdate = await supabase
           .from("learning_modules")
-          .update({
-            title: moduleInput.title,
-            summary: moduleInput.summary,
-            content_markdown: moduleInput.contentMarkdown,
-            pass_score: moduleInput.passScore,
-            estimated_minutes: moduleInput.estimatedMinutes,
-            updated_at: new Date().toISOString(),
-          })
+          .update(moduleUpdatePayload)
           .eq("id", moduleInput.id)
           .eq("campaign_id", campaignId)
           .eq("org_id", orgId);
@@ -239,6 +312,7 @@ export async function PUT(
       metadata: {
         campaignId,
         updatedModules: parsed.data.modules?.length ?? 0,
+        markedStaleModules,
       },
     });
 

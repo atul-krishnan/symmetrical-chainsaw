@@ -22,6 +22,19 @@ type QuizQuestion = {
   explanation: string;
 };
 
+type MediaEmbed = {
+  id: string;
+  kind: "image" | "video";
+  title: string;
+  caption: string;
+  suggestionPrompt: string;
+  assetPath: string | null;
+  mimeType: string | null;
+  status: "suggested" | "attached";
+  order: number;
+  assetUrl?: string | null;
+};
+
 type Module = {
   id: string;
   roleTrack: string;
@@ -30,6 +43,8 @@ type Module = {
   contentMarkdown: string;
   passScore: number;
   estimatedMinutes: number;
+  mediaEmbeds: MediaEmbed[];
+  quizNeedsRegeneration: boolean;
   quizQuestions: QuizQuestion[];
 };
 
@@ -39,6 +54,7 @@ type Campaign = {
   name: string;
   dueAt: string | null;
   status: string;
+  flowVersion: 1 | 2;
   roleTracks: string[];
   publishedAt: string | null;
 };
@@ -97,6 +113,20 @@ function simpleMarkdownToHtml(md: string): string {
     .replace(/\n/g, "<br/>");
 }
 
+function normalizeCampaignDetail(input: CampaignDetail): CampaignDetail {
+  return {
+    campaign: {
+      ...input.campaign,
+      flowVersion: input.campaign.flowVersion ?? 1,
+    },
+    modules: input.modules.map((module) => ({
+      ...module,
+      mediaEmbeds: Array.isArray(module.mediaEmbeds) ? module.mediaEmbeds : [],
+      quizNeedsRegeneration: Boolean(module.quizNeedsRegeneration),
+    })),
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Page component
 // ---------------------------------------------------------------------------
@@ -111,6 +141,8 @@ export default function CampaignEditorPage() {
   const [previewModule, setPreviewModule] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [regeneratingModuleId, setRegeneratingModuleId] = useState<string | null>(null);
+  const [mediaUploading, setMediaUploading] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -140,7 +172,7 @@ export default function CampaignEditorPage() {
       return;
     }
 
-    setDetail(body as CampaignDetail);
+    setDetail(normalizeCampaignDetail(body as CampaignDetail));
     setLoading(false);
   }, [selectedOrgId, campaignId]);
 
@@ -194,6 +226,17 @@ export default function CampaignEditorPage() {
             contentMarkdown: m.contentMarkdown,
             passScore: m.passScore,
             estimatedMinutes: m.estimatedMinutes,
+            mediaEmbeds: m.mediaEmbeds.map((embed) => ({
+              id: embed.id,
+              kind: embed.kind,
+              title: embed.title,
+              caption: embed.caption,
+              suggestionPrompt: embed.suggestionPrompt,
+              assetPath: embed.assetPath,
+              mimeType: embed.mimeType,
+              status: embed.status,
+              order: embed.order,
+            })),
             quizQuestions: m.quizQuestions.map((q) => ({
               id: q.id,
               prompt: q.prompt,
@@ -332,6 +375,111 @@ export default function CampaignEditorPage() {
       modules[moduleIndex] = { ...modules[moduleIndex], quizQuestions: questions };
       return { ...prev, modules };
     });
+  };
+
+  const updateMediaEmbed = (
+    moduleIndex: number,
+    embedIndex: number,
+    field: keyof MediaEmbed,
+    value: unknown,
+  ) => {
+    setDetail((prev) => {
+      if (!prev) return null;
+      const modules = [...prev.modules];
+      const embeds = [...modules[moduleIndex].mediaEmbeds];
+      embeds[embedIndex] = { ...embeds[embedIndex], [field]: value } as MediaEmbed;
+      modules[moduleIndex] = { ...modules[moduleIndex], mediaEmbeds: embeds };
+      return { ...prev, modules };
+    });
+  };
+
+  const regenerateQuiz = async (moduleId: string) => {
+    if (!selectedOrgId) {
+      setError("Select an organization workspace before regenerating.");
+      return;
+    }
+
+    const token = await getToken();
+    if (!token) {
+      setError("Sign in required.");
+      return;
+    }
+
+    setRegeneratingModuleId(moduleId);
+    setError(null);
+    setSuccess(null);
+    try {
+      const response = await fetch(
+        `/api/orgs/${selectedOrgId}/campaigns/${campaignId}/modules/${moduleId}/quiz/regenerate`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const body = await response.json();
+      if (!response.ok) {
+        setError(body?.error?.message ?? "Failed to regenerate quiz.");
+        return;
+      }
+
+      setSuccess("Quiz regenerated from current learning material.");
+      await loadCampaign();
+    } catch {
+      setError("Network error while regenerating quiz.");
+    } finally {
+      setRegeneratingModuleId(null);
+    }
+  };
+
+  const uploadMedia = async (moduleId: string, embedId: string, file: File | null) => {
+    if (!file) return;
+    if (!selectedOrgId) {
+      setError("Select an organization workspace before uploading media.");
+      return;
+    }
+
+    const token = await getToken();
+    if (!token) {
+      setError("Sign in required.");
+      return;
+    }
+
+    const key = `${moduleId}:${embedId}`;
+    setMediaUploading((prev) => ({ ...prev, [key]: true }));
+    setError(null);
+    setSuccess(null);
+
+    const formData = new FormData();
+    formData.append("embedId", embedId);
+    formData.append("file", file);
+    try {
+      const response = await fetch(
+        `/api/orgs/${selectedOrgId}/campaigns/${campaignId}/modules/${moduleId}/media`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        },
+      );
+
+      const body = await response.json();
+      if (!response.ok) {
+        setError(body?.error?.message ?? "Failed to upload media.");
+        return;
+      }
+
+      setSuccess("Media uploaded and attached to module.");
+      await loadCampaign();
+    } catch {
+      setError("Network error while uploading media.");
+    } finally {
+      setMediaUploading((prev) => ({ ...prev, [key]: false }));
+    }
   };
 
   // ---------------------------------------------------------------------------
@@ -479,6 +627,9 @@ export default function CampaignEditorPage() {
                   </span>
                   <span>
                     Modules: <span className="font-medium">{modules.length}</span>
+                  </span>
+                  <span>
+                    Flow: <span className="font-medium">V{campaign.flowVersion ?? 1}</span>
                   </span>
                   <span>
                     Tracks:{" "}
@@ -672,22 +823,188 @@ export default function CampaignEditorPage() {
                 )}
               </div>
 
+              {currentModule.mediaEmbeds.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-display text-xl text-[#10244a]">Learning Media</h3>
+                    <p className="text-xs text-[#4f6486]">
+                      Suggested assets to improve learning clarity before assessment.
+                    </p>
+                  </div>
+
+                  <div className="grid gap-3">
+                    {[...currentModule.mediaEmbeds]
+                      .sort((a, b) => a.order - b.order)
+                      .map((embed) => {
+                        const embedIndex = currentModule.mediaEmbeds.findIndex(
+                          (item) => item.id === embed.id,
+                        );
+                        if (embedIndex === -1) return null;
+
+                        const uploadKey = `${currentModule.id}:${embed.id}`;
+                        const isUploading = Boolean(mediaUploading[uploadKey]);
+                        const accept =
+                          embed.kind === "image"
+                            ? "image/png,image/jpeg,image/webp,image/gif"
+                            : "video/mp4,video/webm,video/quicktime";
+
+                        return (
+                          <div
+                            key={embed.id}
+                            className="rounded-xl border border-[#d3deef] bg-white p-4 space-y-3"
+                          >
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="rounded-full bg-[#eef4ff] px-2.5 py-0.5 text-[11px] font-semibold uppercase text-[#305c9d]">
+                                {embed.kind}
+                              </span>
+                              <span className="rounded-full bg-[#eff3f8] px-2.5 py-0.5 text-[11px] font-semibold uppercase text-[#526b8f]">
+                                {embed.status}
+                              </span>
+                            </div>
+
+                            {embed.assetUrl && embed.kind === "image" && (
+                              <img
+                                alt={embed.title}
+                                className="max-h-52 rounded-lg border border-[#d3deef] object-contain"
+                                src={embed.assetUrl}
+                              />
+                            )}
+                            {embed.assetUrl && embed.kind === "video" && (
+                              <video
+                                className="max-h-52 w-full rounded-lg border border-[#d3deef]"
+                                controls
+                                src={embed.assetUrl}
+                              />
+                            )}
+
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              <label className="space-y-1 text-sm">
+                                <span className="font-medium text-[#10244a]">Title</span>
+                                <input
+                                  className="h-9 w-full rounded-lg border border-[#d3deef] bg-white px-2 disabled:opacity-60"
+                                  disabled={!isDraft}
+                                  value={embed.title}
+                                  onChange={(e) =>
+                                    updateMediaEmbed(activeTab, embedIndex, "title", e.target.value)
+                                  }
+                                />
+                              </label>
+                              <label className="space-y-1 text-sm">
+                                <span className="font-medium text-[#10244a]">Order</span>
+                                <input
+                                  className="h-9 w-full rounded-lg border border-[#d3deef] bg-white px-2 disabled:opacity-60"
+                                  disabled={!isDraft}
+                                  min={0}
+                                  type="number"
+                                  value={embed.order}
+                                  onChange={(e) =>
+                                    updateMediaEmbed(
+                                      activeTab,
+                                      embedIndex,
+                                      "order",
+                                      Number(e.target.value),
+                                    )
+                                  }
+                                />
+                              </label>
+                            </div>
+
+                            <label className="block space-y-1 text-sm">
+                              <span className="font-medium text-[#10244a]">Caption</span>
+                              <textarea
+                                className="w-full rounded-lg border border-[#d3deef] bg-white px-3 py-2 text-sm leading-relaxed disabled:opacity-60"
+                                disabled={!isDraft}
+                                rows={2}
+                                value={embed.caption}
+                                onChange={(e) =>
+                                  updateMediaEmbed(activeTab, embedIndex, "caption", e.target.value)
+                                }
+                              />
+                            </label>
+
+                            <label className="block space-y-1 text-sm">
+                              <span className="font-medium text-[#10244a]">Suggestion Prompt</span>
+                              <textarea
+                                className="w-full rounded-lg border border-[#d3deef] bg-white px-3 py-2 text-sm leading-relaxed disabled:opacity-60"
+                                disabled={!isDraft}
+                                rows={2}
+                                value={embed.suggestionPrompt}
+                                onChange={(e) =>
+                                  updateMediaEmbed(
+                                    activeTab,
+                                    embedIndex,
+                                    "suggestionPrompt",
+                                    e.target.value,
+                                  )
+                                }
+                              />
+                            </label>
+
+                            {isDraft && (
+                              <div className="space-y-2">
+                                <label className="block text-sm font-medium text-[#10244a]">
+                                  Upload {embed.kind === "image" ? "image" : "video"}
+                                </label>
+                                <input
+                                  accept={accept}
+                                  className="block w-full rounded-lg border border-[#d3deef] bg-white px-2 py-2 text-sm"
+                                  onChange={(e) =>
+                                    void uploadMedia(
+                                      currentModule.id,
+                                      embed.id,
+                                      e.target.files?.[0] ?? null,
+                                    )
+                                  }
+                                  type="file"
+                                />
+                                {isUploading && (
+                                  <p className="text-xs text-[#4f6486]">Uploading...</p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+              )}
+
               {/* Quiz questions */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-display text-xl text-[#10244a]">
                     Quiz Questions ({currentModule.quizQuestions.length})
                   </h3>
-                  {isDraft && currentModule.quizQuestions.length < 8 && (
-                    <button
-                      className="rounded-lg border border-[#1f5eff] px-3 py-1.5 text-xs font-semibold text-[#1f5eff] hover:bg-[#e8f9f2]"
-                      onClick={() => addQuestion(activeTab)}
-                      type="button"
-                    >
-                      + Add Question
-                    </button>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {isDraft && (
+                      <button
+                        className="rounded-lg border border-[#1f5eff] px-3 py-1.5 text-xs font-semibold text-[#1f5eff] hover:bg-[#eef4ff] disabled:opacity-60"
+                        disabled={regeneratingModuleId === currentModule.id}
+                        onClick={() => void regenerateQuiz(currentModule.id)}
+                        type="button"
+                      >
+                        {regeneratingModuleId === currentModule.id
+                          ? "Regenerating..."
+                          : "Regenerate Quiz from Material"}
+                      </button>
+                    )}
+                    {isDraft && currentModule.quizQuestions.length < 8 && (
+                      <button
+                        className="rounded-lg border border-[#1f5eff] px-3 py-1.5 text-xs font-semibold text-[#1f5eff] hover:bg-[#e8f9f2]"
+                        onClick={() => addQuestion(activeTab)}
+                        type="button"
+                      >
+                        + Add Question
+                      </button>
+                    )}
+                  </div>
                 </div>
+
+                {isDraft && currentModule.quizNeedsRegeneration && (
+                  <p className="rounded-lg border border-[#f1cbc2] bg-[#fff1ed] px-4 py-2 text-sm text-[#a04e39]">
+                    Learning material changed after the last sync. Regenerate quiz to realign assessment with content.
+                  </p>
+                )}
 
                 {currentModule.quizQuestions.map((q, qi) => (
                   <div

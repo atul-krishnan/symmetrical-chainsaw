@@ -66,9 +66,10 @@ npm run dev
 
 1. Go to `/product/learn`.
 2. Open assigned module.
-3. Submit quiz attempts.
-4. Complete attestation.
-5. Verify completion state in learner queue.
+3. Review learning material and acknowledge completion.
+4. Submit quiz attempts.
+5. Complete attestation.
+6. Verify completion state in learner queue.
 
 ## 6. Evidence and operations
 

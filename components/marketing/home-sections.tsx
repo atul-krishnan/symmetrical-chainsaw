@@ -202,11 +202,11 @@ export function HomeSections() {
       </section>
 
       <section className="px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto grid max-w-7xl gap-4 rounded-[2.1rem] border border-[#ccd9ed] bg-[#0f2d66] p-8 text-[#f3f7ff] shadow-[0_26px_58px_rgba(10,38,89,0.22)] lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="home-reveal">
+        <div className="mx-auto grid max-w-7xl items-start gap-4 rounded-[2.1rem] border border-[#ccd9ed] bg-[#0f2d66] p-7 text-[#f3f7ff] shadow-[0_26px_58px_rgba(10,38,89,0.22)] lg:grid-cols-[1.05fr_0.95fr] lg:p-8">
+          <div className="home-reveal lg:pt-1">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#8fc3ff]">Commercial package</p>
-            <h2 className="mt-3 max-w-2xl font-display text-4xl sm:text-5xl">6-week paid pilot with measurable outcomes</h2>
-            <p className="mt-4 max-w-2xl text-sm leading-relaxed text-[#c8d9f8]">
+            <h2 className="mt-3 max-w-xl font-display text-4xl leading-tight sm:text-[3.35rem]">6-week paid pilot with measurable outcomes</h2>
+            <p className="mt-4 max-w-lg text-sm leading-relaxed text-[#c8d9f8]">
               We focus on two outcomes your stakeholders will care about on day one: completion rate and attestation rate.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
@@ -219,21 +219,23 @@ export function HomeSections() {
             </div>
           </div>
 
-          <aside className="home-reveal rounded-2xl border border-white/18 bg-white/8 p-5 text-sm backdrop-blur-sm">
-            <Image
-              alt="Illustrated timeline of policy upload, generation, campaign launch, and evidence export."
-              className="home-image-float w-full rounded-xl border border-white/25 bg-white/6"
-              height={460}
-              priority={false}
-              src="/marketing/training-journey.svg"
-              width={720}
-            />
-            <h3 className="font-display text-2xl">Pilot delivery path</h3>
-            <ol className="mt-3 space-y-3 text-[#d8e5ff]">
+          <aside className="home-reveal rounded-2xl border border-white/18 bg-white/8 p-4 text-sm backdrop-blur-sm">
+            <div className="rounded-xl border border-white/25 bg-[#163d7f] p-2 sm:p-3">
+              <Image
+                alt="Illustrated timeline of policy upload, generation, campaign launch, and evidence export."
+                className="home-image-float mx-auto h-auto w-full max-w-[580px]"
+                height={460}
+                priority={false}
+                src="/marketing/training-journey.svg"
+                width={720}
+              />
+            </div>
+            <h3 className="mt-4 font-display text-2xl">Pilot delivery path</h3>
+            <ol className="mt-3 grid gap-2 text-[#d8e5ff] sm:grid-cols-2">
               {STEPS.map((step) => (
-                <li key={step.label}>
+                <li className="rounded-xl border border-white/15 bg-white/6 p-3" key={step.label}>
                   <p className="font-semibold text-white">{step.label}</p>
-                  <p>{step.description}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-[#c9dcff]">{step.description}</p>
                 </li>
               ))}
             </ol>
@@ -242,27 +244,29 @@ export function HomeSections() {
       </section>
 
       <section className="px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl rounded-[2.1rem] border border-[#ced9eb] bg-[linear-gradient(170deg,#eef5ff_0%,#f9fcff_100%)] p-8 shadow-[0_20px_48px_rgba(17,50,109,0.12)]">
+        <div className="mx-auto max-w-7xl rounded-[2.1rem] border border-[#ced9eb] bg-[linear-gradient(170deg,#eef5ff_0%,#f9fcff_100%)] p-7 shadow-[0_20px_48px_rgba(17,50,109,0.12)] lg:p-8">
           <p className="home-reveal text-xs font-semibold uppercase tracking-[0.22em] text-[#5675a8]">Product lineage map</p>
-          <h2 className="home-reveal mt-3 max-w-4xl font-display text-4xl text-[#10244a] sm:text-5xl">
+          <h2 className="home-reveal mt-3 max-w-4xl font-display text-3xl text-[#10244a] sm:text-4xl lg:text-[3.15rem] lg:leading-[1.03]">
             One policy source branches into role tracks, campaign logic, and evidence outputs
           </h2>
           <p className="home-reveal mt-4 max-w-3xl text-sm leading-relaxed text-[#4f6588]">
             This tree makes the product flow explicit: ingest source guidance once, then branch into obligation modeling, role-focused delivery, and traceable outcomes.
           </p>
 
-          <div className="home-reveal mt-7 overflow-hidden rounded-3xl border border-[#cad9f0] bg-white p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] sm:p-4">
-            <Image
-              alt="Product lineage map showing one policy source branching into role tracks, campaign logic, and evidence outputs."
-              className="w-full rounded-2xl border border-[#d5dfef]"
-              height={1024}
-              priority={false}
-              src="/marketing/product-lineage-map.png"
-              width={1536}
-            />
+          <div className="home-reveal mt-6 overflow-hidden rounded-3xl border border-[#cad9f0] bg-white p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] sm:p-4">
+            <div className="rounded-2xl border border-[#d5dfef] bg-[#f8fbff] p-1.5 sm:p-2.5">
+              <Image
+                alt="Product lineage map showing one policy source branching into role tracks, campaign logic, and evidence outputs."
+                className="mx-auto h-auto w-full max-w-[1200px] rounded-xl lg:w-[92%]"
+                height={1024}
+                priority={false}
+                src="/marketing/product-lineage-map.png"
+                width={1536}
+              />
+            </div>
           </div>
 
-          <div className="mt-5 grid gap-3 md:grid-cols-3">
+          <div className="mt-4 grid gap-3 md:grid-cols-3">
             <article className="home-reveal rounded-2xl border border-[#d5e0f2] bg-white/90 p-4">
               <h3 className="font-display text-2xl text-[#15366b]">1. Parse policy</h3>
               <p className="mt-1 text-sm text-[#4b6389]">Model obligations and control statements from a single canonical policy document.</p>

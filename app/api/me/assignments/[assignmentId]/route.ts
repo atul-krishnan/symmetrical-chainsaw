@@ -2,6 +2,18 @@ import { ApiError } from "@/lib/api/errors";
 import { withApiHandler } from "@/lib/api/route-helpers";
 import { requireUserAndClient } from "@/lib/edtech/db";
 import { writeRequestAuditLog } from "@/lib/edtech/request-audit-log";
+import { moduleMediaEmbedSchema } from "@/lib/edtech/types";
+
+function parseMediaEmbeds(input: unknown) {
+  if (!Array.isArray(input)) {
+    return [];
+  }
+
+  return input
+    .map((item) => moduleMediaEmbedSchema.safeParse(item))
+    .filter((result) => result.success)
+    .map((result) => result.data);
+}
 
 // ---------------------------------------------------------------------------
 // GET /api/me/assignments/[assignmentId]
@@ -20,11 +32,11 @@ export async function GET(
     const result = await supabase
       .from("assignments")
       .select(
-        `id,org_id,state,due_at,started_at,completed_at,
+        `id,org_id,state,due_at,started_at,completed_at,material_acknowledged_at,
          learning_modules!inner(
-           id,title,summary,content_markdown,role_track,pass_score,
+           id,title,summary,content_markdown,role_track,pass_score,media_embeds_json,
            estimated_minutes,campaign_id,
-           learning_campaigns!inner(id,name,status)
+           learning_campaigns!inner(id,name,status,flow_version)
          )`,
       )
       .eq("id", assignmentId)
@@ -71,13 +83,39 @@ export async function GET(
       choices: q.choices_json,
     }));
 
+    const mediaEmbeds = parseMediaEmbeds(moduleData.media_embeds_json);
+    const mediaPaths = mediaEmbeds
+      .map((item) => item.assetPath)
+      .filter((item): item is string => Boolean(item));
+    const signedUrlByPath = new Map<string, string | null>();
+
+    if (mediaPaths.length > 0) {
+      const signedResult = await supabase.storage
+        .from("module-media")
+        .createSignedUrls(mediaPaths, 60 * 60);
+
+      if (signedResult.error) {
+        throw new ApiError("STORAGE_ERROR", signedResult.error.message, 500);
+      }
+
+      for (const item of signedResult.data ?? []) {
+        if (item.path) {
+          signedUrlByPath.set(item.path, item.error ? null : item.signedUrl ?? null);
+        }
+      }
+    }
+
+    let assignmentState = row.state;
+    let assignmentStartedAt = row.started_at;
+
     if (row.state === "assigned") {
+      const startedAt = new Date().toISOString();
       const updateResult = await supabase
         .from("assignments")
         .update({
           state: "in_progress",
-          started_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
+          started_at: startedAt,
+          updated_at: startedAt,
         })
         .eq("id", assignmentId)
         .eq("user_id", user.id);
@@ -85,6 +123,9 @@ export async function GET(
       if (updateResult.error) {
         throw new ApiError("DB_ERROR", updateResult.error.message, 500);
       }
+
+      assignmentState = "in_progress";
+      assignmentStartedAt = startedAt;
     }
 
     await writeRequestAuditLog({
@@ -101,10 +142,11 @@ export async function GET(
     return {
       assignment: {
         id: row.id,
-        state: row.state === "assigned" ? "in_progress" : row.state,
+        state: assignmentState,
         dueAt: row.due_at,
-        startedAt: row.started_at,
+        startedAt: assignmentStartedAt,
         completedAt: row.completed_at,
+        materialAcknowledgedAt: row.material_acknowledged_at,
       },
       module: {
         id: moduleData.id,
@@ -115,12 +157,17 @@ export async function GET(
         passScore: moduleData.pass_score,
         estimatedMinutes: moduleData.estimated_minutes,
         campaignId: moduleData.campaign_id,
+        mediaEmbeds: mediaEmbeds.map((item) => ({
+          ...item,
+          assetUrl: item.assetPath ? signedUrlByPath.get(item.assetPath) ?? null : null,
+        })),
       },
       campaign: campaignData
         ? {
             id: campaignData.id,
             name: campaignData.name,
             status: campaignData.status,
+            flowVersion: campaignData.flow_version ?? 1,
           }
         : null,
       questions,

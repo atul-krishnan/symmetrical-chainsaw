@@ -1,6 +1,7 @@
 export type OrgRole = "owner" | "admin" | "manager" | "learner";
 
 export type RoleTrack = "exec" | "builder" | "general";
+export type LearningFlowVersion = 1 | 2;
 
 export type PolicyDocument = {
   id: string;
@@ -35,10 +36,23 @@ export type LearningCampaign = {
   dueAt: string | null;
   policyIds: string[];
   roleTracks: RoleTrack[];
+  flowVersion: LearningFlowVersion;
   status: LearningCampaignStatus;
   createdBy: string;
   createdAt: string;
   updatedAt: string;
+};
+
+export type ModuleMediaEmbed = {
+  id: string;
+  kind: "image" | "video";
+  title: string;
+  caption: string;
+  suggestionPrompt: string;
+  assetPath: string | null;
+  mimeType: string | null;
+  status: "suggested" | "attached";
+  order: number;
 };
 
 export type LearningModule = {
@@ -51,6 +65,8 @@ export type LearningModule = {
   contentMarkdown: string;
   passScore: number;
   estimatedMinutes: number;
+  mediaEmbeds: ModuleMediaEmbed[];
+  quizNeedsRegeneration?: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -77,6 +93,7 @@ export type Assignment = {
   state: AssignmentState;
   startedAt: string | null;
   completedAt: string | null;
+  materialAcknowledgedAt: string | null;
   dueAt: string | null;
   createdAt: string;
   updatedAt: string;

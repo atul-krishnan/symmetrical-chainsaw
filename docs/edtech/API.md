@@ -25,6 +25,8 @@ All API errors use this envelope:
   - Creates owner membership for signed-in user if they have no org memberships.
   - If no organizations exist, creates one and assigns owner role.
 - `GET /api/me/assignments`
+- `GET /api/me/assignments/[assignmentId]`
+- `POST /api/me/assignments/[assignmentId]/acknowledge-material`
 - `POST /api/me/modules/[moduleId]/attempts`
 - `POST /api/me/campaigns/[campaignId]/attest`
 
@@ -36,6 +38,8 @@ All API errors use this envelope:
 - `GET /api/orgs/[orgId]/campaigns/[campaignId]`
   - Learner responses hide `correctChoiceIndex`
 - `PUT /api/orgs/[orgId]/campaigns/[campaignId]`
+- `POST /api/orgs/[orgId]/campaigns/[campaignId]/modules/[moduleId]/quiz/regenerate`
+- `POST /api/orgs/[orgId]/campaigns/[campaignId]/modules/[moduleId]/media`
 - `POST /api/orgs/[orgId]/campaigns/[campaignId]/publish`
   - Idempotent success semantics. Replays return success with current state.
 - `POST /api/orgs/[orgId]/campaigns/[campaignId]/nudges/send`

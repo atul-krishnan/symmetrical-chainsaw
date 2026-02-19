@@ -32,6 +32,7 @@ type OrgMembership = {
 type CampaignDetail = {
   campaign: {
     id: string;
+    flowVersion?: number;
   };
   modules: Array<{
     id: string;
@@ -269,6 +270,35 @@ async function main(): Promise<void> {
         value: target.id,
       };
     });
+
+    if ((campaignDetail.campaign.flowVersion ?? 1) === 2) {
+      await runStep("material_acknowledge", async () => {
+        const response = await fetch(
+          `${baseUrl}/api/me/assignments/${assignmentId}/acknowledge-material`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          },
+        );
+
+        const body = (await response.json()) as
+          | { ok: boolean; materialAcknowledgedAt: string }
+          | { error?: { message?: string } };
+
+        if (!response.ok || !("ok" in body)) {
+          throw new Error("Material acknowledgment failed");
+        }
+
+        return {
+          details: {
+            materialAcknowledgedAt: body.materialAcknowledgedAt,
+          },
+          value: body,
+        };
+      });
+    }
 
     await runStep("quiz_attempt", async () => {
       const targetModule =

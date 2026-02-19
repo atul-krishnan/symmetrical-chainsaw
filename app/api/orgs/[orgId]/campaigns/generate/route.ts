@@ -76,10 +76,11 @@ export async function POST(
         due_at: parsed.data.dueAt ?? null,
         policy_ids: parsed.data.policyIds,
         role_tracks: parsed.data.roleTracks,
+        flow_version: draft.flowVersion,
         status: "draft",
         created_by: user.id,
       })
-      .select("id,status")
+      .select("id,status,flow_version")
       .single();
 
     if (campaignInsert.error || !campaignInsert.data) {
@@ -100,6 +101,8 @@ export async function POST(
       content_markdown: module.contentMarkdown,
       pass_score: module.passScore,
       estimated_minutes: module.estimatedMinutes,
+      media_embeds_json: module.mediaEmbeds,
+      quiz_sync_hash: module.quizSyncHash,
     }));
 
     const moduleInsert = await supabase
@@ -159,6 +162,7 @@ export async function POST(
       metadata: {
         campaignId,
         modules: draft.modules.length,
+        flowVersion: draft.flowVersion,
       },
     });
 

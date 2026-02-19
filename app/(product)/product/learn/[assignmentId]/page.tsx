@@ -20,6 +20,18 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 // ---------------------------------------------------------------------------
 
 type Question = { id: string; prompt: string; choices: string[] };
+type MediaEmbed = {
+  id: string;
+  kind: "image" | "video";
+  title: string;
+  caption: string;
+  suggestionPrompt: string;
+  assetPath: string | null;
+  mimeType: string | null;
+  status: "suggested" | "attached";
+  order: number;
+  assetUrl?: string | null;
+};
 type Module = {
   id: string;
   title: string;
@@ -29,10 +41,18 @@ type Module = {
   passScore: number;
   estimatedMinutes: number;
   campaignId: string;
+  mediaEmbeds: MediaEmbed[];
 };
-type Campaign = { id: string; name: string; status: string } | null;
+type Campaign = { id: string; name: string; status: string; flowVersion?: 1 | 2 } | null;
 type DetailResponse = {
-  assignment: { id: string; state: string; dueAt: string | null; startedAt: string | null; completedAt: string | null };
+  assignment: {
+    id: string;
+    state: string;
+    dueAt: string | null;
+    startedAt: string | null;
+    completedAt: string | null;
+    materialAcknowledgedAt: string | null;
+  };
   module: Module;
   campaign: Campaign;
   questions: Question[];
@@ -65,9 +85,12 @@ export default function AssignmentPage() {
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<AttemptResult | null>(null);
+  const [materialAcknowledgedAt, setMaterialAcknowledgedAt] = useState<string | null>(null);
+  const [confirmRead, setConfirmRead] = useState(false);
+  const [acknowledging, setAcknowledging] = useState(false);
 
   const loadDetail = useCallback(async () => {
-    setLoading(true); setError(null);
+    setLoading(true); setError(null); setConfirmRead(false); setMaterialAcknowledgedAt(null);
     const supabase = getSupabaseBrowserClient();
     if (!supabase) { setError("Supabase not configured."); setLoading(false); return; }
     const { data: session } = await supabase.auth.getSession();
@@ -79,7 +102,21 @@ export default function AssignmentPage() {
       const res = await fetch(`/api/me/assignments/${assignmentId}`, { headers: { Authorization: `Bearer ${token}` } });
       const body = await res.json();
       if (!res.ok) { setError(body?.error?.message ?? "Failed to load."); setLoading(false); return; }
-      setData(body as DetailResponse);
+      const detail = body as DetailResponse;
+      setData({
+        ...detail,
+        campaign: detail.campaign
+          ? { ...detail.campaign, flowVersion: detail.campaign.flowVersion ?? 1 }
+          : null,
+        module: {
+          ...detail.module,
+          mediaEmbeds: Array.isArray(detail.module.mediaEmbeds) ? detail.module.mediaEmbeds : [],
+        },
+      });
+      setMaterialAcknowledgedAt(detail.assignment.materialAcknowledgedAt ?? null);
+      if (detail.assignment.materialAcknowledgedAt) {
+        setConfirmRead(true);
+      }
     } catch { setError("Network error."); } finally { setLoading(false); }
   }, [assignmentId]);
 
@@ -106,6 +143,38 @@ export default function AssignmentPage() {
       setStep("result");
     } catch { setError("Network error."); } finally { setSubmitting(false); }
   }, [data, answers]);
+
+  const acknowledgeMaterial = useCallback(async () => {
+    if (!assignmentId) return;
+
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+
+    const { data: session } = await supabase.auth.getSession();
+    const token = session.session?.access_token;
+    if (!token) return;
+
+    setAcknowledging(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/me/assignments/${assignmentId}/acknowledge-material`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        setError(body?.error?.message ?? "Failed to acknowledge material.");
+        return;
+      }
+
+      setMaterialAcknowledgedAt(body?.materialAcknowledgedAt ?? new Date().toISOString());
+      setConfirmRead(true);
+    } catch {
+      setError("Network error.");
+    } finally {
+      setAcknowledging(false);
+    }
+  }, [assignmentId]);
 
   // -----------------------------------------------------------------------
   // Renders
@@ -135,6 +204,8 @@ export default function AssignmentPage() {
 
   const { module: mod, campaign, questions } = data;
   const allAnswered = questions.length > 0 && questions.every((q) => answers[q.id] !== undefined);
+  const requiresAcknowledgement = (campaign?.flowVersion ?? 1) === 2;
+  const canStartQuiz = !requiresAcknowledgement || Boolean(materialAcknowledgedAt);
 
   const steps: { key: Step; label: string }[] = [
     { key: "read", label: "1. Read" },
@@ -163,6 +234,7 @@ export default function AssignmentPage() {
               <Clock className="h-3.5 w-3.5" /> ~{mod.estimatedMinutes} min
             </span>
             <span>Pass: {mod.passScore}%</span>
+            <span>Flow: V{campaign?.flowVersion ?? 1}</span>
           </div>
         </div>
 
@@ -185,6 +257,7 @@ export default function AssignmentPage() {
                   }`}
                 onClick={() => {
                   if (s.key === "result" && !result) return;
+                  if (s.key === "quiz" && !canStartQuiz) return;
                   setStep(s.key);
                 }}
               >
@@ -213,15 +286,92 @@ export default function AssignmentPage() {
             className="prose prose-sm max-w-none text-[var(--text-primary)]"
             dangerouslySetInnerHTML={{ __html: simpleMarkdown(mod.contentMarkdown) }}
           />
-          <button className="btn btn-primary" onClick={() => setStep("quiz")} type="button">
+
+          {mod.mediaEmbeds.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-base font-semibold text-[var(--text-primary)]">
+                Learning Media
+              </h3>
+              <div className="grid gap-3">
+                {[...mod.mediaEmbeds]
+                  .sort((a, b) => a.order - b.order)
+                  .map((embed) => (
+                    <article
+                      className="rounded-lg border border-[var(--border)] bg-white p-4 space-y-2"
+                      key={embed.id}
+                    >
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="status-pill status-pill-info uppercase">{embed.kind}</span>
+                        <span className="text-xs text-[var(--text-faint)]">{embed.title}</span>
+                      </div>
+                      {embed.assetUrl && embed.kind === "image" && (
+                        <img
+                          alt={embed.title}
+                          className="max-h-64 rounded-lg border border-[var(--border)] object-contain"
+                          src={embed.assetUrl}
+                        />
+                      )}
+                      {embed.assetUrl && embed.kind === "video" && (
+                        <video
+                          className="max-h-64 w-full rounded-lg border border-[var(--border)]"
+                          controls
+                          src={embed.assetUrl}
+                        />
+                      )}
+                      <p className="text-sm text-[var(--text-secondary)]">{embed.caption}</p>
+                    </article>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {requiresAcknowledgement && (
+            <div className="rounded-lg border border-[var(--border)] bg-[var(--bg-muted)] p-4 space-y-3">
+              <p className="text-sm text-[var(--text-secondary)]">
+                Confirm that you reviewed this material before starting the quiz.
+              </p>
+              <label className="flex items-start gap-2 text-sm text-[var(--text-primary)]">
+                <input
+                  checked={confirmRead}
+                  className="mt-1 accent-[var(--accent)]"
+                  onChange={(e) => setConfirmRead(e.target.checked)}
+                  type="checkbox"
+                />
+                I reviewed the learning content and understand the expectations.
+              </label>
+              {!materialAcknowledgedAt ? (
+                <button
+                  className="btn btn-secondary"
+                  disabled={!confirmRead || acknowledging}
+                  onClick={() => void acknowledgeMaterial()}
+                  type="button"
+                >
+                  {acknowledging ? "Saving..." : "Acknowledge Material"}
+                </button>
+              ) : (
+                <p className="text-sm text-[var(--success)]">
+                  Acknowledged {new Date(materialAcknowledgedAt).toLocaleString()}.
+                </p>
+              )}
+            </div>
+          )}
+
+          <button
+            className="btn btn-primary"
+            disabled={!canStartQuiz}
+            onClick={() => setStep("quiz")}
+            type="button"
+          >
             <BookOpenCheck className="h-4 w-4" />
-            Start Quiz ({questions.length} questions)
+            {canStartQuiz
+              ? `Start Quiz (${questions.length} questions)`
+              : "Acknowledge material to unlock quiz"}
           </button>
         </div>
       )}
 
       {/* Quiz */}
-      {step === "quiz" && (
+      {step === "quiz" && canStartQuiz && (
         <div className="space-y-4">
           {questions.map((q, qi) => (
             <div key={q.id} className="card p-5 space-y-3">
@@ -271,6 +421,17 @@ export default function AssignmentPage() {
               {submitting ? "Submitting…" : "Submit Answers"}
             </button>
           </div>
+        </div>
+      )}
+
+      {step === "quiz" && !canStartQuiz && (
+        <div className="card p-6 space-y-3">
+          <p className="text-sm text-[var(--text-secondary)]">
+            Review and acknowledge the learning material before starting the quiz.
+          </p>
+          <button className="btn btn-secondary" onClick={() => setStep("read")} type="button">
+            Back to Content
+          </button>
         </div>
       )}
 

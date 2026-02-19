@@ -126,7 +126,9 @@ export default function CampaignsPage() {
       <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
         <div className="card p-6">
           <h2 className="text-lg font-semibold text-[var(--text-primary)]">New Draft Campaign</h2>
-          <p className="mt-1 text-sm text-[var(--text-muted)]">Build role-ready training modules from parsed policy obligations.</p>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">
+            Generate learning materials first, then role-aligned assessments from finalized module content.
+          </p>
 
           <div className="mt-5 grid gap-4">
             <div>
@@ -180,9 +182,11 @@ export default function CampaignsPage() {
         </div>
 
         <aside className="card border-[var(--bg-sidebar)] bg-[var(--bg-sidebar)] p-6 text-sm text-slate-300">
-          <h3 className="text-base font-semibold text-white">Publishing Checklist</h3>
+          <h3 className="text-base font-semibold text-white">Learning-First Checklist</h3>
           <ul className="mt-3 space-y-2 text-slate-400">
-            <li>Review module copy for policy precision.</li>
+            <li>Review generated module content for policy precision and readability.</li>
+            <li>Attach internal media for suggested visual/video slots.</li>
+            <li>Regenerate quiz from finalized material before publish.</li>
             <li>Validate pass score thresholds before publish.</li>
             <li>Publish with an Idempotency-Key for safe retries.</li>
             <li>Track completion and attestation in dashboard.</li>

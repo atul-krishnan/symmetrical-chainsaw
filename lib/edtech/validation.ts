@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { moduleMediaEmbedSchema } from "@/lib/edtech/types";
 
 export const orgRoleSchema = z.enum(["owner", "admin", "manager", "learner"]);
 export const roleTrackSchema = z.enum(["exec", "builder", "general"]);
@@ -35,6 +36,7 @@ export const campaignUpdateSchema = z.object({
         contentMarkdown: z.string().min(80).max(8000),
         passScore: z.number().int().min(60).max(100),
         estimatedMinutes: z.number().int().min(3).max(45),
+        mediaEmbeds: z.array(moduleMediaEmbedSchema).min(0).max(12).optional(),
         quizQuestions: z.array(quizQuestionUpdateSchema).min(1).max(8).optional(),
       }),
     )
@@ -54,6 +56,10 @@ export const attestationSchema = z.object({
 
 export const nudgeSendSchema = z.object({
   mode: z.enum(["all_pending", "overdue_only"]).default("all_pending"),
+});
+
+export const moduleMediaUploadSchema = z.object({
+  embedId: z.string().uuid(),
 });
 
 export const bootstrapOwnerSchema = z.object({
